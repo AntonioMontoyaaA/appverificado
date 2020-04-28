@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:src="@drawable/img_invalido"
+        android:scaleType="fitXY"
+        android:id="@+id/aBack"
+        >
+    </ImageView>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    >
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="80sp"
+        android:id="@+id/a"
+        android:gravity="center"
+        android:background="@color/colorAmarilloAlert"
+        android:src="@drawable/msg_alert"
+        android:scaleType="fitCenter"
+        android:visibility="invisible"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/TextView_height"
+        android:text="TEXTO"
+        android:id="@+id/text_dialog"
+        android:layout_below="@+id/a"
+        android:layout_marginTop="20sp"
+        android:layout_marginLeft="4sp"
+        android:layout_marginRight="4sp"
+        android:textSize="20sp"
+        android:layout_centerHorizontal="true"
+        android:typeface="sans"
+        android:layout_marginBottom="@dimen/activity_horizontal_margin"
+        android:textAlignment="center"
+        android:textColor="@color/colorBlanco"
+        android:gravity="bottom" />
+
+    <Button
+        android:layout_width="110sp"
+        android:layout_height="50sp"
+        android:text="Aceptar"
+        android:id="@+id/btn_dialog"
+        android:gravity="center_vertical|center_horizontal"
+        android:layout_below="@+id/text_dialog"
+        android:layout_marginBottom="20sp"
+        android:layout_centerHorizontal="true"
+        android:textColor="#FFFFFF"
+        android:background="@drawable/rounded_boton"/>
+
+
+    </RelativeLayout>
+</FrameLayout>

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:src="@drawable/img_invalido"
+        android:scaleType="fitXY"
+        android:id="@+id/aBack"
+        >
+    </ImageView>
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        >
+
+
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="70sp"
+            android:text="Te faltan ---- cajas por contar"
+            android:id="@+id/text_dialog"
+            android:layout_below="@+id/a"
+            android:layout_marginTop="@dimen/layout_marginTop_TextView_dialogoError"
+            android:layout_marginLeft="4sp"
+            android:layout_marginRight="4sp"
+            android:layout_marginBottom="5sp"
+            android:textSize="25sp"
+            android:textColor="#FFFFFF"
+            android:layout_centerHorizontal="true"
+            android:gravity="center" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="150sp"
+            android:paddingTop="0sp"
+            android:layout_marginTop="0sp"
+            android:columnCount="1"
+            android:rowCount="1"
+            android:layout_weight="0.97"
+            android:gravity="center"
+            android:layout_below="@+id/text_dialog"
+            >
+
+            <Button
+                android:layout_width="@dimen/layout_width_Button"
+                android:layout_height="50sp"
+                android:text="FINALIZAR"
+                android:textSize="18sp"
+                android:id="@+id/btnFinalizar"
+                android:gravity="center_vertical|center_horizontal"
+                android:layout_below="@+id/text_dialog"
+                android:layout_marginBottom="20sp"
+                android:layout_centerHorizontal="true"
+                android:layout_alignParentLeft="true"
+                android:layout_marginRight="10sp"
+                android:layout_marginLeft="20sp"
+                android:textColor="#FFFFFF"
+                android:background="@drawable/rounded_boton_verde"/>
+
+            <Button
+                android:layout_width="@dimen/layout_width_Button"
+                android:layout_height="50sp"
+                android:text="Ver diferencias"
+                android:textSize="13sp"
+                android:id="@+id/btnDiferencias"
+                android:gravity="center_vertical|center_horizontal"
+                android:layout_below="@+id/text_dialog"
+                android:layout_marginBottom="20sp"
+                android:layout_centerHorizontal="true"
+                android:layout_alignParentRight="true"
+                android:layout_marginLeft="10sp"
+                android:layout_marginRight="20sp"
+                android:textColor="#FFFFFF"
+                android:background="@drawable/rounded_boton"/>
+
+        </LinearLayout>
+
+    </RelativeLayout>
+</FrameLayout>

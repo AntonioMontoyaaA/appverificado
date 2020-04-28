@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Default screen margins, per the Android Design guidelines. -->
+    <dimen name="activity_horizontal_margin">16sp</dimen>
+    <dimen name="activity_vertical_margin">16sp</dimen>
+
+
+    <!--activity_dialogo_generico.xml-->
+    <!--@+id/text_dialog-->
+    <dimen name="TextView_height">300sp</dimen>
+
+
+    <!--activity_carga_folio_pedio.xml-->
+    <!--@+id/folioPedidoText-->
+    <dimen name="layout_marginTop_EditText">0sp</dimen>
+    <!--@+id/validaPedidoBoton-->
+    <dimen name="layou_marginTop_CodigoBarras">30sp</dimen>
+
+
+    <!--activity_carga_codigos_barra.xml-->
+    <!--RelativeLayout-->
+    <dimen name="layout_marginTop_RelativeLayout">0sp</dimen>
+    <!--LinearLayout-->
+    <dimen name="layout_marginTop_LinearLayout">0sp</dimen>
+    <!--@+id/numeroSerieLabel-->
+    <dimen name="layouth_Width">315sp</dimen>
+
+
+
+    <!--activity_carga_zonas_siaponibles.xml-->
+    <!--ScrollView-->
+    <dimen name="layout_height_ScrollView_cargaZonas">580sp</dimen>
+
+
+    <!--activity_consulta_avance.xml-->
+    <!--@+id/estatusPedidoValido-->
+    <dimen name="layout_marginLeft_ImageView">23sp</dimen>
+    <!--@+id/estatusPedidoValido-->
+    <dimen name="layout_marginLeft_TextView">45sp</dimen>
+
+
+
+    <!--activity_conteo_diferencias.xml-->
+    <!--@+id/container_scroll_view-->
+    <dimen name="layout_height_ScrollView">470sp</dimen>
+
+
+    <!--activity_diferencias_recibidas.xml-->
+    <!--TableRow-->
+    <dimen name="layout_margin_top_TableRow">0sp</dimen>
+    <!--View-->
+    <dimen name="layout_margin_top_View">0sp</dimen>
+    <!--LinearLayout-->
+    <dimen name="layout_marginTop_LinearLayout_DiferenciasRecibidas">10sp</dimen>
+    <!--ScrollView-->
+    <dimen name="layout_marginTop_ScrollView">0sp</dimen>
+    <dimen name="layout_height_ScrollView_DiferenciasRecibidas">460sp</dimen>
+    <!--RelativeLayout-->
+    <dimen name="layout_marginTop_RelativeLayout_DiferenciasRecibidas">40sp</dimen>
+
+
+
+    <!--activity_view_dialogo_error.xml-->
+    <!--@+id/text_dialog-->
+    <dimen name="layout_marginTop_TextView_dialogoError">250sp</dimen>
+    <!--@+id/btnFinalizar-->
+    <dimen name="layout_width_Button">150sp</dimen>
+
+
+    <!--activity_diferencia_aclarada.xml-->
+    <!--@+id/text_dialog-->
+    <dimen name="layout_marginTop_TextView">60sp</dimen>
+    <!--RelativeLayout-->
+    <dimen name="layout_height_RelativeLayout">500sp</dimen>
+
+</resources>

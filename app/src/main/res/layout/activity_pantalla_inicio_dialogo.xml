@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/colorBackVerifica">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="25sp"
+            android:text="Tienda"
+            android:id="@+id/text_dialog"
+            android:layout_marginTop="10sp"
+            android:layout_marginRight="4sp"
+            android:layout_marginBottom="0sp"
+            android:paddingLeft="30sp"
+            android:textSize="16sp"
+            android:textColor="@color/colorNegro"
+            android:gravity="" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="60sp"
+            android:text="---"
+            android:id="@+id/text_dialog_nombreTienda"
+            android:layout_below="@+id/text_dialog"
+            android:layout_marginTop="0sp"
+            android:layout_marginLeft="4sp"
+            android:layout_marginRight="4sp"
+            android:layout_marginBottom="5sp"
+            android:textSize="22sp"
+            android:textColor="@color/colorFuente"
+            android:layout_centerHorizontal="true"
+            android:gravity="center" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="25sp"
+            android:text="Folio"
+            android:id="@+id/text_dialog2"
+            android:layout_below="@+id/text_dialog_nombreTienda"
+            android:layout_marginTop="10sp"
+            android:layout_marginLeft="0sp"
+            android:layout_marginRight="4sp"
+            android:layout_marginBottom="0sp"
+            android:paddingLeft="30sp"
+            android:textSize="16sp"
+            android:textColor="@color/colorNegro"
+            android:layout_centerHorizontal="true"
+            android:gravity="" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="80sp"
+            android:text="---"
+            android:id="@+id/text_dialog_folio"
+            android:layout_below="@+id/text_dialog2"
+            android:layout_marginTop="0sp"
+            android:layout_marginLeft="4sp"
+            android:layout_marginRight="4sp"
+            android:layout_marginBottom="5sp"
+            android:textSize="25sp"
+            android:textColor="@color/colorFuente"
+            android:layout_centerHorizontal="true"
+            android:gravity="center" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="25sp"
+            android:text="Cajas por verificar"
+            android:id="@+id/text_dialog3"
+            android:layout_below="@+id/text_dialog_folio"
+            android:layout_marginTop="10sp"
+            android:layout_marginLeft="4sp"
+            android:layout_marginRight="4sp"
+            android:layout_marginBottom="5sp"
+            android:paddingLeft="30sp"
+            android:textSize="16sp"
+            android:textColor="@color/colorNegro"
+            android:layout_centerHorizontal="true"
+            android:gravity="" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="70sp"
+            android:text="---"
+            android:id="@+id/text_dialog_cajasPorRecibir"
+            android:layout_below="@+id/text_dialog3"
+            android:layout_marginTop="0sp"
+            android:layout_marginLeft="4sp"
+            android:layout_marginRight="4sp"
+            android:layout_marginBottom="5sp"
+            android:textSize="55sp"
+            android:textColor="@color/colorFuente"
+            android:layout_centerHorizontal="true"
+            android:gravity="center" />
+
+        <Button
+            android:text="INICIAR CONTEO"
+            android:id="@+id/iniciaBoton"
+            android:background="@drawable/rounded_boton_generico"
+            android:layout_width="140sp"
+            android:layout_height="50sp"
+            android:layout_gravity="center"
+            android:textSize="15sp"
+            android:textColor="#FFFFFF"
+            android:onClick="iniciaConteo"
+            android:layout_below="@+id/text_dialog_cajasPorRecibir"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="10sp"
+            android:layout_marginBottom="20sp"/>
+
+    </RelativeLayout>
+
+</LinearLayout>

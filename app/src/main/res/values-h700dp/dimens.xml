@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--activity_conteo_diferencias.xml-->
+    <!--@+id/container_scroll_view-->
+    <dimen name="layout_height_ScrollView">450sp</dimen>
+
+
+    <!--activity_carga_zonas_siaponibles.xml-->
+    <!--ScrollView-->
+    <dimen name="layout_height_ScrollView_cargaZonas">600sp</dimen>
+
+
+    <!--activity_Diferencias_Recibidas.xml-->
+    <!--ScrollView-->
+    <dimen name="layout_height_ScrollView_DiferenciasRecibidas">450sp</dimen>
+
+
+    <!--activity_view_dialogo_generico.xml-->
+    <!--@+id/text_dialog-->
+    <dimen name="TextView_layout_marginTop">250sp</dimen>
+
+
+</resources>

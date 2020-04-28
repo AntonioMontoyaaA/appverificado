@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Conteos de cajas</string>
+    <string name="finaliza_carga">Finalizar conteo</string>
+    <string name="edit_message">Enter a message</string>
+    <string name="folio_pedido">Escanea el folio del pedido</string>
+    <string name="llave_sian">Escanea la llave</string>
+</resources>

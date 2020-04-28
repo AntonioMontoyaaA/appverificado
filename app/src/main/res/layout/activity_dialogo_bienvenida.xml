@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/colorNetoLogin">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="30sp"
+        android:text="Bienvenido(a)"
+        android:textColor="@color/colorBlanco"
+        android:textAlignment="center"
+        android:textSize="20sp"/>
+
+    <TextView
+        android:id="@+id/nombreEmpleadoText"
+        android:layout_width="match_parent"
+        android:layout_height="80sp"
+        android:text="---"
+        android:textColor="@color/colorBlanco"
+        android:textAlignment="center"
+        android:textSize="30sp"/>
+
+
+</LinearLayout>
