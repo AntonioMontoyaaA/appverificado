@@ -6,12 +6,13 @@ package neto.com.mx.verificapedidocedis.utiles;
 
 public class Constantes {
 
-    //public static final String URL_STRING_LOGIN = "http://10.81.12.45:7777/WSSIAN/services/WSPickeoMovil/";//DESA
-    //public static final String URL_STRING = "http://10.81.12.45:7777/WSSIAN/services/WSVerificadorMovil/";//DESA
+    public static final String URL_STRING_LOGIN = "http://10.81.12.45:7777/WSSIAN/services/WSPickeoMovil/";//DESA
+    public static final String URL_STRING = "http://10.81.12.45:7777/WSSIAN/services/WSVerificadorMovil/";//DESA.
+
     //public static final String URL_STRING_LOGIN = "http://10.81.12.46:7777/WSSIANPAR/services/WSPickeoMovil/";//QA
     //public static final String URL_STRING = "http://10.81.12.46:7777/WSSIANPAR/services/WSVerificadorMovil/";//QA
-    public static final String URL_STRING_LOGIN = "http://10.81.12.203:8003/WSSIONIndicadores/services/WSPickeoMovil/";//PROD
-    public static final String URL_STRING = "http://10.81.12.203:8003/WSSIONIndicadores/services/WSVerificadorMovil/";//PROD
+    //public static final String URL_STRING_LOGIN = "http://10.81.12.203:8003/WSSIONIndicadores/services/WSPickeoMovil/";//PROD
+    //public static final String URL_STRING = "http://10.81.12.203:8003/WSSIONIndicadores/services/WSVerificadorMovil/";//PROD
 
     //Cifradas
     // public static final String URL_STRING = "http://10.37.140.202:7777/WSSIANMoviles/services/WSAbastoMovil/"; //DESA
@@ -26,6 +27,13 @@ public class Constantes {
     public static final String ID_APP_VERIFICADOR   =   "2";
 
     public static String NAMESPACE = "http://service.movil.abasto.neto";
+    public static String METHOD_NAME_VALIDAUSUARIO = "validaUsuario";
+    public static String NAMESPACEVALIDAUSUARIO = "http://servicio.pickeo.movil.abasto.neto";
     public static String METHOD_NAME_GUARDARARTSCONTADOSVERIFICADOR = "guardarArtsContadosVerificador";
+    public static String METHOD_NAME_GETVALIDAPEDIDOVERIFICADOR = "getValidaPedidoVerificador";
+    public static String METHOD_NAME_GUARDARDIFERENCIASVERIFICADO = "guardarDiferenciasVerificado";
+    public static String METHOD_NAME_GETCATALOGOARTICULOSVERIFICADORGENERAL = "getCatalogoArticulosVerificadorGeneral";
+
+
 
 }

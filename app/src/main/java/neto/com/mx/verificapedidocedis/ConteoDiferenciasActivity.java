@@ -51,10 +51,12 @@ import neto.com.mx.verificapedidocedis.dialogos.DiferenciaAclaradaDialog;
 import neto.com.mx.verificapedidocedis.dialogos.ViewDialog;
 import neto.com.mx.verificapedidocedis.dialogos.ViewDialogoGenerico;
 import neto.com.mx.verificapedidocedis.providers.ProviderGuardarArticulos;
+import neto.com.mx.verificapedidocedis.providers.ProviderGuardarDiferencias;
 import neto.com.mx.verificapedidocedis.utiles.Constantes;
 import neto.com.mx.verificapedidocedis.utiles.TiposAlert;
 
 import static neto.com.mx.verificapedidocedis.utiles.Constantes.METHOD_NAME_GUARDARARTSCONTADOSVERIFICADOR;
+import static neto.com.mx.verificapedidocedis.utiles.Constantes.METHOD_NAME_GUARDARDIFERENCIASVERIFICADO;
 import static neto.com.mx.verificapedidocedis.utiles.Constantes.NAMESPACE;
 
 public class ConteoDiferenciasActivity extends AppCompatActivity {
@@ -88,7 +90,7 @@ public class ConteoDiferenciasActivity extends AppCompatActivity {
     private String numeroEmpleado = "";
     private String nombreEmpleado = "";
     private String version = "";
-    RespuestaIncidenciasVO respuestaIncidencias;
+    public static RespuestaIncidenciasVO respuestaIncidencias;
     int tipoPermiso;
     int totalCajasSurtidas;
     int incidencia=0;
@@ -402,7 +404,7 @@ public class ConteoDiferenciasActivity extends AppCompatActivity {
                 System.out.println("ENTRA A METODO DE GUARDADO 3" + metodo);
 
                 try {
-                    String url = Constantes.URL_STRING + "guardarArtsContadosVerificador";
+                    //String url = Constantes.URL_STRING + "guardarArtsContadosVerificador";
                     int contadorOcurrencias = 0;
                     final ProgressDialog mDialog = new ProgressDialog(this);
                     mDialog.setMessage("Guardando códigos de barra...");
@@ -795,8 +797,206 @@ public class ConteoDiferenciasActivity extends AppCompatActivity {
         NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
         if (networkInfo != null && networkInfo.isConnected()) {
             try {
-                String url = Constantes.URL_STRING + "guardarDiferenciasVerificado";
-                StringRequest strRequest = new StringRequest(Request.Method.POST, url,
+
+                //String url = Constantes.URL_STRING + "guardarDiferenciasVerificado";
+                SoapObject request = new SoapObject(NAMESPACE, METHOD_NAME_GUARDARDIFERENCIASVERIFICADO);
+                request.addProperty("folio", folio);
+                request.addProperty("numeroSerie", Build.SERIAL);
+                request.addProperty("version", version);
+                request.addProperty("usuarioVerificaId", numeroEmpleado);
+                request.addProperty("usuarioAutorizaId","0");
+                request.addProperty("tipoAutorizacion", String.valueOf(tipoPermiso));
+                request.addProperty("indicadorProceso", indicadorProceso);
+                request.addProperty("articulosArray", obtieneArticulosIncidencia(xTodos,articuloId));
+                request.addProperty("cantidadesArray", obtieneCajasIncidencia(xTodos, articuloId));
+                System.out.println("/////////////////////////////REQUEST_DATOSENVIADOS_ConteoDiferenciasActivity:"+request);
+
+                ProviderGuardarDiferencias.getInstance(this).getGuardarDiferencias(request, new ProviderGuardarDiferencias.interfaceGuardarDiferencias() {
+                    @Override
+                    public void resolver(RespuestaIncidenciasVO respuestaGuardaDiferencias) {
+
+                        mDialog.dismiss();
+                        System.out.println("*** 1 *** respuestaGuardaDiferencias: " + respuestaGuardaDiferencias);
+                        if (respuestaGuardaDiferencias != null) {
+
+                            // ----------------------------------
+                            if (opcion == 1) {
+                                if (respuestaIncidencias.getCodigo() == 0) {
+                                    incidencia = 0;
+                                    estatusIncidencia = 1;
+//                                        banderaIncidencia = 0;
+                                    for (RespuestaIncidenciasVO.IncidenciaVO inc : respuestaIncidencias.getListaIncidencias()) {
+                                        incidencia = 1;
+                                        if (inc.getEstatusDiferencia() == 0) {
+                                            estatusIncidencia = 0;
+//                                                banderaIncidencia = 1;
+                                        }
+                                    }
+                                    if (estatusIncidencia == 0) {
+                                        ViewDialog alert = new ViewDialog(ConteoDiferenciasActivity.this);
+                                        alert.showDialog(ConteoDiferenciasActivity.this, "Existen incidencias sin autorizar, comunícate con el encargado de almacén para continuar", null, TiposAlert.ERROR);
+                                    } else {
+                                        codigoActual = codigoBarras;
+//                                            actualizaValores(true);
+                                    }
+                                }
+                            }
+                            // ----------------------------------
+                            else if (opcion == 2) {
+                                if (respuestaIncidencias.getCodigo() == 0) {
+                                    Toast toast1 = Toast.makeText(getApplicationContext(),
+                                            "Incidencias generadas con éxito", Toast.LENGTH_SHORT);
+                                    toast1.show();
+//                                        actualizaValores(true);
+                                } else {
+                                    codigoBarras = codigoActual;
+                                }
+                            }
+                            // ----------------------------------
+                            else if (opcion == 3) {
+                                if (respuestaIncidencias.getCodigo() == 0) {
+                                    incidencia = 0;
+                                    estatusIncidencia = 1;
+//                                        banderaIncidencia = 0;
+                                    for (RespuestaIncidenciasVO.IncidenciaVO inc : respuestaIncidencias.getListaIncidencias()) {
+                                        if (inc.getArticuloId() == articuloId) {
+                                            incidencia = 1;
+                                            if (inc.getEstatusDiferencia() == 0) {
+                                                estatusIncidencia = 0;
+//                                                    banderaIncidencia = 1;
+                                            }
+                                        }
+                                    }
+
+                                    if (incidencia == 0) {
+                                        final ViewDialogoGenerico dialogo = new ViewDialogoGenerico(ConteoDiferenciasActivity.this);
+                                        dialogo.showDialog(ConteoDiferenciasActivity.this, "Faltan cajas por verificar del artículo " + descripcionCodigoBarras + ". ¿Desea generar una incidencia de faltante?", "Aceptar", "Regresar", "", true);
+                                        dialogo.setViewDialogoGenericoListener(new ViewDialogoGenerico.ViewDialogoGenericoListener() {
+                                            @Override
+                                            public void onVerde() {
+                                                indicadorProceso = "2";
+                                                if (obtieneArticulosIncidencia(false, articuloId) != "") {
+                                                    consultaIncidencias(false, articuloId, 7);
+                                                }
+                                            }
+
+                                            @Override
+                                            public void onRojo() {
+                                                codigoBarras = codigoActual;
+                                            }
+
+                                            @Override
+                                            public void onExtra() {
+
+                                            }
+                                        });
+                                    } else {
+                                        if (estatusIncidencia == 0) {
+                                            ViewDialog alert = new ViewDialog(ConteoDiferenciasActivity.this);
+                                            alert.showDialog(ConteoDiferenciasActivity.this, "Solicita la autorización de la incidencia al encargado de almacén para continuar", null, TiposAlert.ERROR);
+                                        } else {
+                                            codigoActual = codigoBarras;
+//                                                actualizaValores(true);
+                                        }
+                                    }
+                                }
+                            }
+                            // ----------------------------------
+                            else if (opcion == 4) {
+                                if (respuestaIncidencias.getCodigo() == 0) {
+                                    Toast toast1 = Toast.makeText(getApplicationContext(),
+                                            "Incidencias generadas con éxito", Toast.LENGTH_SHORT);
+                                    toast1.show();
+                                    finalizaConteo();
+                                }
+                            }
+                            // ----------------------------------
+                            else if (opcion == 5) {
+                                if (respuestaIncidencias.getCodigo() == 0) {
+                                    incidencia = 0;
+                                    estatusIncidencia = 1;
+                                    for (RespuestaIncidenciasVO.IncidenciaVO inc : respuestaIncidencias.getListaIncidencias()) {
+                                        incidencia = 1;
+                                        if (inc.getEstatusDiferencia() == 0) {
+                                            estatusIncidencia = 0;
+                                        }
+                                    }
+
+                                    if (incidencia == 1) {
+                                        if (estatusIncidencia == 0) {
+                                            ViewDialog alert = new ViewDialog(ConteoDiferenciasActivity.this);
+                                            alert.showDialog(ConteoDiferenciasActivity.this, "Existen incidencias sin autorizar, comunícate con el encargado de almacén para continuar", null, TiposAlert.ERROR);
+                                        } else {
+                                            indicadorProceso = "2";
+                                            if (obtieneArticulosIncidencia(true, 0) != "") {
+                                                consultaIncidencias(true, 0, 6);
+                                            } else {
+                                                finalizaConteo();
+                                            }
+                                        }
+                                    } else {
+                                        indicadorProceso = "2";
+                                        if (obtieneArticulosIncidencia(true, 0) != "") {
+                                            consultaIncidencias(true, 0, 6);
+                                        } else {
+                                            finalizaConteo();
+                                        }
+                                    }
+                                }
+                            } else if (opcion == 6) {
+
+                                if (respuestaIncidencias.getCodigo() == 0) {
+//                                        banderaIncidencia = 1;
+                                    Toast toast1 = Toast.makeText(getApplicationContext(),
+                                            "Incidencias generadas con éxito", Toast.LENGTH_SHORT);
+                                    toast1.show();
+
+                                    ViewDialog alert = new ViewDialog(ConteoDiferenciasActivity.this);
+                                    alert.showDialog(ConteoDiferenciasActivity.this, "Solicita la autorización de la incidencia al encargado de almacén para continuar", null, TiposAlert.ERROR);
+                                }
+                            } else if (opcion == 7) {
+                                if (respuestaIncidencias.getCodigo() == 0) {
+//                                        banderaIncidencia = 1;
+                                    Toast toast1 = Toast.makeText(getApplicationContext(),
+                                            "Incidencias generadas con éxito", Toast.LENGTH_SHORT);
+                                    toast1.show();
+
+
+                                    ViewDialog alert = new ViewDialog(ConteoDiferenciasActivity.this);
+                                    alert.showDialog(ConteoDiferenciasActivity.this, "Solicita la autorización de la incidencia al encargado de almacén para continuar", null, TiposAlert.ERROR);
+                                }
+                            }
+                            // ----------------------------------
+                            System.out.println("******GENERAR INCIDENCIAS" + respuestaGuardaDiferencias);
+                            if (respuestaIncidencias.getCodigo() != 0) {
+                                if (indicadorProceso == "1") {
+                                    ViewDialog alert = new ViewDialog(ConteoDiferenciasActivity.this);
+                                    alert.showDialog(ConteoDiferenciasActivity.this, "Ocurrió un error al consultar incidencias", null, TiposAlert.ERROR);
+                                }
+                                if (indicadorProceso == "2") {
+                                    ViewDialog alert = new ViewDialog(ConteoDiferenciasActivity.this);
+                                    alert.showDialog(ConteoDiferenciasActivity.this, "Ocurrió un error al generar incidencias", null, TiposAlert.ERROR);
+                                }
+                            }
+                        }else {
+                            System.out.println("*** 2 ***");
+                            //cuando el tiempo del servicio exedio el timeout
+                            ViewDialog alert = new ViewDialog(ConteoDiferenciasActivity.this);
+                            alert.showDialog(ConteoDiferenciasActivity.this, "Ocurrió un problema al generar las incidencias", null, TiposAlert.ERROR);
+                        }
+                    }
+                });
+
+
+
+
+
+
+
+
+
+
+                /*StringRequest strRequest = new StringRequest(Request.Method.POST, url,
                         new Response.Listener<String>() {
                             @Override
                             public void onResponse(String response) {
@@ -995,7 +1195,7 @@ public class ConteoDiferenciasActivity extends AppCompatActivity {
                         20000,
                         DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
                         DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-                AppController.getInstance().addToRequestQueue(strRequest, "tag");
+                AppController.getInstance().addToRequestQueue(strRequest, "tag");*/
             } catch(Exception me) {
                 mDialog.dismiss();
 //                System.out.println("*** No existe comunicación ***");

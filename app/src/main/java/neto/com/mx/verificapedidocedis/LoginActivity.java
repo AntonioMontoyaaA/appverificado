@@ -23,6 +23,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 
+import org.ksoap2.serialization.SoapObject;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserFactory;
 
@@ -34,8 +35,12 @@ import java.util.Map;
 
 import neto.com.mx.verificapedidocedis.beans.UsuarioVO;
 import neto.com.mx.verificapedidocedis.dialogos.ViewDialog;
+import neto.com.mx.verificapedidocedis.providers.ProviderValidaUsuario;
 import neto.com.mx.verificapedidocedis.utiles.Constantes;
 import neto.com.mx.verificapedidocedis.utiles.TiposAlert;
+
+import static neto.com.mx.verificapedidocedis.utiles.Constantes.METHOD_NAME_VALIDAUSUARIO;
+import static neto.com.mx.verificapedidocedis.utiles.Constantes.NAMESPACEVALIDAUSUARIO;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -104,7 +109,55 @@ public class LoginActivity extends AppCompatActivity {
                 mDialog.setInverseBackgroundForced(false);
                 mDialog.show();
 
-                String url = Constantes.URL_STRING_LOGIN + "validaUsuario";
+
+                SoapObject request = new SoapObject(NAMESPACEVALIDAUSUARIO,METHOD_NAME_VALIDAUSUARIO);
+
+                request.addProperty("usuario", usuario);
+                request.addProperty("password", convierteMD5(pass));
+                request.addProperty("idApp", Constantes.ID_APP_VERIFICADOR);
+
+                ProviderValidaUsuario.getInstance(this).getValidaUsuario(request, new ProviderValidaUsuario.interfaceValidaUsuario() {
+                    @Override
+                    public void resolver(UsuarioVO respuestaValidaUsuario) {
+
+                        mDialog.dismiss();
+                        System.out.println("*** 1 *** " + respuestaValidaUsuario);
+
+
+
+                        if (respuestaValidaUsuario != null) {
+                            if (respuestaValidaUsuario.isEmpleadoValido().equals("true")) {
+                                Intent intent = new Intent(getApplicationContext(), CargaFolioPedidoActivity.class);
+                                intent.putExtra("numeroEmpleado", usuario);
+                                intent.putExtra("nombreEmpleado", respuestaValidaUsuario.getNombreEmpleado());
+                                startActivity(intent);
+                            } else {
+                                ViewDialog alert = new ViewDialog(LoginActivity.this);
+                                alert.showDialog(LoginActivity.this, respuestaValidaUsuario.getMensaje(), null, TiposAlert.ERROR);
+                            }
+                        } else {
+                            mDialog.dismiss();
+                            System.out.println("*** 2 ***");
+                            //cuando el tiempo del servicio exedio el timeout
+                            ViewDialog alert = new ViewDialog(LoginActivity.this);
+                            alert.showDialog(LoginActivity.this, "Error al consumir el servicio que valida el usuario", null, TiposAlert.ERROR);
+                        }
+
+                    }
+                });
+
+
+
+
+
+
+
+
+
+
+
+
+                /*String url = Constantes.URL_STRING_LOGIN + "validaUsuario";
 
 
                 StringRequest strRequest = new StringRequest(Request.Method.POST, url,
@@ -163,7 +216,7 @@ public class LoginActivity extends AppCompatActivity {
                         DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
                         DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 
-                AppController.getInstance().addToRequestQueue(strRequest, "tag");
+                AppController.getInstance().addToRequestQueue(strRequest, "tag");*/
 
             } catch(Exception me) {
                 ViewDialog alert = new ViewDialog(LoginActivity.this);
@@ -176,7 +229,7 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
-    public void generaRespuesta(String response, UsuarioVO usuarioVO) {
+    /*public void generaRespuesta(String response, UsuarioVO usuarioVO) {
         try {
             XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
             factory.setNamespaceAware(true);
@@ -211,7 +264,7 @@ public class LoginActivity extends AppCompatActivity {
             ViewDialog alert = new ViewDialog(LoginActivity.this);
             alert.showDialog(LoginActivity.this, "Error al leer el estatus del usuario del xml: " + e.getMessage(), null, TiposAlert.ERROR);
         }
-    }
+    }*/
 
     public String convierteMD5(String pass) {
         try {

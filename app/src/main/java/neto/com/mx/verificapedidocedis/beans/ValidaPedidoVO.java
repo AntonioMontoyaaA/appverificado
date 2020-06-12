@@ -14,7 +14,7 @@ public class ValidaPedidoVO implements Serializable {
     private int cedisId;
     private String nombreCedis;
     private String llave;
-    private boolean pedidoValido;
+    private String pedidoValido;
     private boolean requiereLlave;
     private int codigo;
     private String mensaje;
@@ -61,11 +61,11 @@ public class ValidaPedidoVO implements Serializable {
         this.llave = llave;
     }
 
-    public boolean isPedidoValido() {
+    public String isPedidoValido() {
         return pedidoValido;
     }
 
-    public void setPedidoValido(boolean pedidoValido) {
+    public void setPedidoValido(String pedidoValido) {
         this.pedidoValido = pedidoValido;
     }
 
@@ -109,20 +109,4 @@ public class ValidaPedidoVO implements Serializable {
         this.listaZonasVerificado = listaZonasVerificado;
     }
 
-    @Override
-    public String toString() {
-        return "ValidaPedidoVO{" +
-                "tiendaId=" + tiendaId +
-                ", nombreTienda='" + nombreTienda + '\'' +
-                ", cedisId=" + cedisId +
-                ", nombreCedis='" + nombreCedis + '\'' +
-                ", llave='" + llave + '\'' +
-                ", pedidoValido=" + pedidoValido +
-                ", requiereLlave=" + requiereLlave +
-                ", listaZonas=" + listaZonas.length +
-                ", listaZonasVerificado=" + listaZonasVerificado.size() +
-                ", codigo=" + codigo +
-                ", mensaje='" + mensaje + '\'' +
-                '}';
-    }
 }

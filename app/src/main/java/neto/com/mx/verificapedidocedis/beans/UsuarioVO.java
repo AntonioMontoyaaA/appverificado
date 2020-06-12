@@ -10,7 +10,7 @@ public class UsuarioVO implements Serializable {
 
     private int numeroEmpleado;
     private String nombreEmpleado;
-    private boolean empleadoValido;
+    private String empleadoValido;
     private int codigo;
     private String mensaje;
 
@@ -30,11 +30,11 @@ public class UsuarioVO implements Serializable {
         this.nombreEmpleado = nombreEmpleado;
     }
 
-    public boolean isEmpleadoValido() {
+    public String isEmpleadoValido() {
         return empleadoValido;
     }
 
-    public void setEmpleadoValido(boolean empleadoValido) {
+    public void setEmpleadoValido(String empleadoValido) {
         this.empleadoValido = empleadoValido;
     }
 

@@ -4,6 +4,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Paint;
 import android.media.MediaPlayer;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -49,12 +50,18 @@ import neto.com.mx.verificapedidocedis.beans.RespuestaIncidenciasVO;
 import neto.com.mx.verificapedidocedis.dialogos.PantallaInicioDialogo;
 import neto.com.mx.verificapedidocedis.dialogos.ViewDialog;
 import neto.com.mx.verificapedidocedis.dialogos.ViewDialogoGenerico;
+import neto.com.mx.verificapedidocedis.providers.ProviderGeneraCatalogo;
 import neto.com.mx.verificapedidocedis.providers.ProviderGuardarArticulos;
+import neto.com.mx.verificapedidocedis.providers.ProviderGuardarDiferencias;
+import neto.com.mx.verificapedidocedis.providers.ProviderGuardarDiferencias_CargaCodigosBarra;
 import neto.com.mx.verificapedidocedis.utiles.Constantes;
 import neto.com.mx.verificapedidocedis.utiles.TiposAlert;
 
+import static neto.com.mx.verificapedidocedis.utiles.Constantes.METHOD_NAME_GETCATALOGOARTICULOSVERIFICADORGENERAL;
 import static neto.com.mx.verificapedidocedis.utiles.Constantes.METHOD_NAME_GUARDARARTSCONTADOSVERIFICADOR;
+import static neto.com.mx.verificapedidocedis.utiles.Constantes.METHOD_NAME_GUARDARDIFERENCIASVERIFICADO;
 import static neto.com.mx.verificapedidocedis.utiles.Constantes.NAMESPACE;
+import static neto.com.mx.verificapedidocedis.utiles.Constantes.NAMESPACEVALIDAUSUARIO;
 
 public class CargaCodigosBarraActivity extends AppCompatActivity {
 
@@ -63,7 +70,7 @@ public class CargaCodigosBarraActivity extends AppCompatActivity {
     private String codigoBarras = "";
     private String nombreTienda = "";
     private long articuloIdBusqueda = 0;
-    private HashMap<Long, ArticuloVO> mapaCatalogo = new HashMap<Long, ArticuloVO>();
+    public static HashMap<Long, ArticuloVO> mapaCatalogo = new HashMap<Long, ArticuloVO>();
     private HashMap<String, Integer> mapaCodigosNoRem = new HashMap<String, Integer>();
     private String folio = "";
     private String numeroEmpleado = "";
@@ -75,19 +82,19 @@ public class CargaCodigosBarraActivity extends AppCompatActivity {
     private List<String> listaCodigos = null;
     private int ACCION_GUARDA = 0;
     private boolean esGuardadoPorCodigos = false;
-    int banderaIncidencia;
-    int tipoPermiso;
+    public static int banderaIncidencia;
+    public static int tipoPermiso;
     long incidencia = 0;
     int estatusIncidencia = 0;
     int pallet = 0;
     String indicadorProceso = "1";
     String codigoActual = "";
-    RespuestaIncidenciasVO respuestaIncidencias;
+    public static RespuestaIncidenciasVO respuestaIncidencias;
     String metodo = "";
     boolean bloqueo_finalizado = false; //para asegurar que solo se guarde una vez por peticion
 
     //Variables para Dialogo de confirmación
-    boolean existeCodigo = false;
+    public static boolean existeCodigo = false;
     String descripcionCodigoBarras = "";
     int cantidadCapturadaDialogo = 0;
     int cantidadEmbarcadaDialogo = 0;
@@ -173,15 +180,54 @@ public class CargaCodigosBarraActivity extends AppCompatActivity {
                 mDialog.setInverseBackgroundForced(false);
                 mDialog.show();
 
-                String url = Constantes.URL_STRING + "getCatalogoArticulosVerificadorGeneral";
+                //String url = Constantes.URL_STRING + "getCatalogoArticulosVerificadorGeneral";
+
+                SoapObject request = new SoapObject(NAMESPACE,METHOD_NAME_GETCATALOGOARTICULOSVERIFICADORGENERAL);
+
+                request.addProperty("folio", folio);
+                request.addProperty("numeroSerie", Build.SERIAL);
+                request.addProperty("version", version);
+                request.addProperty("usuario", numeroEmpleado);
+
+                System.out.println("///////////////////////////REQUEST DescargaCatalogosArticulos"+request);
+
+                ProviderGeneraCatalogo.getInstance(this).getGeneraCatalogo(request, new ProviderGeneraCatalogo.interfaceGeneraCatalogo() {
+                    @Override
+                    public void resolver(ArticuloVO respuestaGeneraCatalogo) {
+
+                        mDialog.dismiss();
+                        System.out.println("*** 1 *** RESPONSE_CargaCodigosBarraActivity-GeneraCatalogo://////////////////////////////////" + respuestaGeneraCatalogo);
+                        if (respuestaGeneraCatalogo != null) {
+                            cuentaCajasRecibidas();
+                            PantallaInicioDialogo pantallaInicioDialogo = new PantallaInicioDialogo(CargaCodigosBarraActivity.this);
+                            pantallaInicioDialogo.showDialog(CargaCodigosBarraActivity.this, new String(nombreTienda), new String(folio), totalCajasSurtidas - totalCajasRecibidas);
+                        }else {
+                            mDialog.dismiss();
+                            System.out.println("*** 2 ***");
+                            //cuando el tiempo del servicio exedio el timeout
+                            ViewDialog alert = new ViewDialog(CargaCodigosBarraActivity.this);
+                            alert.showDialog(CargaCodigosBarraActivity.this, "Error al cargar catálogo de artículos", null, TiposAlert.ERROR);
+                        }
+
+                    }
+
+                    @Override
+                    public Map<String, String> getHeaders() throws AuthFailureError {
+                        return getHeaders();
+                    }
+                });
 
 
-                StringRequest strRequest = new StringRequest(Request.Method.POST, url,
+
+
+
+
+                /*StringRequest strRequest = new StringRequest(Request.Method.POST, url,
                         new Response.Listener<String>() {
                             @Override
                             public void onResponse(String response) {
                                 mDialog.dismiss();
-                                System.out.println("*** 1 *** " + response);
+                                System.out.println("*** 1 *** RESPONSE://////////////////////////////////" + response);
                                 generaCatalogoV2(response);
 //                                System.out.println("*** TIPO PERMISO: " + tipoPermiso);
 //                                System.out.println("*** TOTAL DE ARTÍCULOS: " + mapaCatalogo.size());
@@ -229,7 +275,8 @@ public class CargaCodigosBarraActivity extends AppCompatActivity {
                         DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
                         DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 
-                AppController.getInstance().addToRequestQueue(strRequest, "tag");
+                AppController.getInstance().addToRequestQueue(strRequest, "tag");*/
+
 
             } catch (Exception me) {
                 ViewDialog alert = new ViewDialog(CargaCodigosBarraActivity.this);
@@ -242,8 +289,8 @@ public class CargaCodigosBarraActivity extends AppCompatActivity {
         }
     }
 
-    private int totalCajasSurtidas = 0;
-    private int totalCajasRecibidas = 0;
+    public static int totalCajasSurtidas = 0;
+    public static int totalCajasRecibidas = 0;
 
     public void generaCatalogoV2(String response) {
         System.out.println("entra a generaCatalogo");
@@ -567,17 +614,38 @@ public class CargaCodigosBarraActivity extends AppCompatActivity {
             int nearest = pallet;
 
             if (cantidadCapturadaDialogo % pallet == 0) { // SI MULTIPLO DE PALLET
+                System.out.println("cantidadCapturadaDialogo1/////////////////////////////////////////////////////" + cantidadCapturadaDialogo);
+                System.out.println("pallet1/////////////////////////////////////////////////////" + pallet);
+                System.out.println("canidadEmbarcadaDialogo1/////////////////////////////////////////////////////" + cantidadEmbarcadaDialogo);
                 if ((cantidadCapturadaDialogo + pallet) > cantidadEmbarcadaDialogo) {
                     // NO HACER NADAA
                     editTextCodigos.getText().clear();
                     ViewDialog alert = new ViewDialog(CargaCodigosBarraActivity.this);
                     alert.showDialog(CargaCodigosBarraActivity.this, "No puedes contar más cajas de las asignadas", null, TiposAlert.ERROR);
+                    /*System.out.println("cantidadCapturadaDialogo2/////////////////////////////////////////////////////" + cantidadCapturadaDialogo);
+                    System.out.println("pallet2/////////////////////////////////////////////////////" + pallet);
+                    System.out.println("canidadEmbarcadaDialogo2/////////////////////////////////////////////////////" + cantidadEmbarcadaDialogo);*/
                 } else {
                     cantidadCapturadaDialogo = cantidadCapturadaDialogo + pallet;
+                    /*System.out.println("cantidadCapturadaDialogo3/////////////////////////////////////////////////////" + cantidadCapturadaDialogo);
+                    System.out.println("pallet3/////////////////////////////////////////////////////" + pallet);
+                    System.out.println("canidadEmbarcadaDialogo3/////////////////////////////////////////////////////" + cantidadEmbarcadaDialogo);*/
                 }
-            } else {
+            } else if (cantidadCapturadaDialogo < pallet){
                 num = num + ((num % nearest - nearest) * -1);
                 cantidadCapturadaDialogo = num;
+                /*System.out.println("cantidadCapturadaDialogo4/////////////////////////////////////////////////////" + cantidadCapturadaDialogo);
+                System.out.println("pallet4/////////////////////////////////////////////////////" + pallet);
+                System.out.println("canidadEmbarcadaDialogo4/////////////////////////////////////////////////////" + cantidadEmbarcadaDialogo);*/
+            }else {
+                // NO HACER NADAA
+                System.out.println("Dentro de error por mayor a pallet");
+                editTextCodigos.getText().clear();
+                ViewDialog alert = new ViewDialog(CargaCodigosBarraActivity.this);
+                alert.showDialog(CargaCodigosBarraActivity.this, "No puedes contar más cajas de las asignadas", null, TiposAlert.ERROR);
+                /*System.out.println("cantidadCapturadaDialogo2/////////////////////////////////////////////////////" + cantidadCapturadaDialogo);
+                System.out.println("pallet2/////////////////////////////////////////////////////" + pallet);
+                System.out.println("canidadEmbarcadaDialogo2/////////////////////////////////////////////////////" + cantidadEmbarcadaDialogo);*/
             }
             mapaCatalogo.get(articuloIdBusqueda).setTotalCajasVerificadas(cantidadCapturadaDialogo);
             textView30.setText(String.valueOf(cantidadCapturadaDialogo));
@@ -896,10 +964,47 @@ public class CargaCodigosBarraActivity extends AppCompatActivity {
                 // Operaciones http
                 try {
                     System.out.println("ENTRA A METODO DE GUARDADO 2 " + metodo);
-                    String url = Constantes.URL_STRING + "guardarArtsContadosVerificador";
+                    //String url = Constantes.URL_STRING + "guardarArtsContadosVerificador";
                     int contadorOcurrencias = 0;
 
-                    StringRequest strRequest = null;
+                    SoapObject request = new SoapObject(NAMESPACE,METHOD_NAME_GUARDARARTSCONTADOSVERIFICADOR);
+
+                    request.addProperty("folio", folio);
+                    request.addProperty("idZona", String.valueOf(idZona));
+                    request.addProperty("articulosArray", obtieneCadenaArticulos());
+                    request.addProperty("cantidadesArray", obtieneCadenaCajas());
+                    request.addProperty("tipoGuardado", String.valueOf(ACCION_GUARDA));
+                    request.addProperty("numeroSerie", Build.SERIAL);
+                    request.addProperty("version", version);
+                    request.addProperty("usuario", numeroEmpleado);
+                    request.addProperty("metodo", metodo);
+                    System.out.println("///////////////////////////REQUEST_EJECUTAWSHILO_CargaCodigosBarraActivity"+request);
+
+                    ProviderGuardarArticulos.getInstance(this).getGuardarArticulos(request, new ProviderGuardarArticulos.interfaceGuardarArticulos() {
+                        @Override
+                        public void resolver(CodigosGuardadosVO respuestaGuardaArticulos) {
+                            if (respuestaGuardaArticulos != null) {
+
+                                System.out.println("*** GUARDADO 2 - hilo *** response: " + respuestaGuardaArticulos);
+//                                System.out.println("*** Pedido = " + folio);
+                                bloqueo_finalizado = false;
+                            }else {
+                                System.out.println("*** 2 ***");
+                                //cuando el tiempo del servicio exedio el timeout
+                                ViewDialog alert = new ViewDialog(CargaCodigosBarraActivity.this);
+                                alert.showDialog(CargaCodigosBarraActivity.this, "Error al consumir el servicio que guarda los códigos", null, TiposAlert.ERROR);
+                            }
+
+                        }
+                    });
+
+
+
+
+
+
+                    /*StringRequest strRequest = null;
+
 
                     strRequest = new StringRequest(Request.Method.POST, url,
                             new Response.Listener<String>() {
@@ -938,7 +1043,7 @@ public class CargaCodigosBarraActivity extends AppCompatActivity {
                             50000,
                             0,
                             DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-                    AppController.getInstance().addToRequestQueue(strRequest, "tag");
+                    AppController.getInstance().addToRequestQueue(strRequest, "tag");*/
 
 
                 } catch (Exception me) {
@@ -1180,8 +1285,211 @@ public class CargaCodigosBarraActivity extends AppCompatActivity {
         NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
         if (networkInfo != null && networkInfo.isConnected()) {
             try {
-                String url = Constantes.URL_STRING + "guardarDiferenciasVerificado";
-                StringRequest strRequest = new StringRequest(Request.Method.POST, url,
+                //String url = Constantes.URL_STRING + "guardarDiferenciasVerificado";
+                SoapObject request = new SoapObject(NAMESPACE,METHOD_NAME_GUARDARDIFERENCIASVERIFICADO);
+
+
+                request.addProperty("folio", folio);
+                request.addProperty("numeroSerie", Build.SERIAL);
+                request.addProperty("version", version);
+                request.addProperty("usuarioVerificaId", numeroEmpleado);
+                request.addProperty("usuarioAutorizaId", "0");
+                request.addProperty("tipoAutorizacion", String.valueOf(tipoPermiso));
+                request.addProperty("indicadorProceso", indicadorProceso);
+                request.addProperty("articulosArray", obtieneArticulosIncidencia(xTodos, articuloId));
+                request.addProperty("cantidadesArray", obtieneCajasIncidencia(xTodos, articuloId));
+
+
+                System.out.println("/////////////////////////////REQUEST_consultaIncidencias_CargaCodigosBarraActivity:"+request);
+
+                ProviderGuardarDiferencias_CargaCodigosBarra.getInstance(this).getGuardarDiferencias_CargaCodigosBarra(request, new ProviderGuardarDiferencias_CargaCodigosBarra.interfaceGuardarDiferencias_CargaCodigosBarra() {
+                    @Override
+                    public void resolver(RespuestaIncidenciasVO respuestaGuardaDiferencias_CargaCodigosBarra) {
+                        System.out.println("****** INCIDENCIAS RESPONSE" + respuestaGuardaDiferencias_CargaCodigosBarra);
+
+                        mDialog.dismiss();
+
+                        if (respuestaGuardaDiferencias_CargaCodigosBarra != null) {
+                            // ----------------------------------
+                            if (opcion == 1) {
+                                Log.d(TAG, "onResponse: " + "respuesta opcion1");
+
+                                if (respuestaIncidencias.getCodigo() == 0) {
+                                    incidencia = 0;
+                                    estatusIncidencia = 1;
+                                    banderaIncidencia = 0;
+                                    for (RespuestaIncidenciasVO.IncidenciaVO inc : respuestaIncidencias.getListaIncidencias()) {
+                                        incidencia = 1;
+                                        if (inc.getEstatusDiferencia() == 0) {
+                                            estatusIncidencia = 0;
+                                            banderaIncidencia = 1;
+                                        }
+                                    }
+                                    if (estatusIncidencia == 0) {
+                                        ViewDialog alert = new ViewDialog(CargaCodigosBarraActivity.this);
+                                        alert.showDialog(CargaCodigosBarraActivity.this, "Existen incidencias sin autorizar, comunícate con el encargado de almacén para continuar", null, TiposAlert.ERROR);
+                                    } else {
+                                        codigoActual = codigoBarras;
+                                        actualizaValores(true);
+                                    }
+                                }
+                            }
+                            // ----------------------------------
+                            else if (opcion == 2) {
+                                if (respuestaIncidencias.getCodigo() == 0) {
+                                    Toast toast1 = Toast.makeText(getApplicationContext(),
+                                            "Incidencias generadas con éxito", Toast.LENGTH_SHORT);
+                                    toast1.show();
+                                    actualizaValores(true);
+                                } else {
+                                    codigoBarras = codigoActual;
+                                }
+                            }
+                            // ----------------------------------
+                            else if (opcion == 3) {
+                                if (respuestaIncidencias.getCodigo() == 0) {
+                                    incidencia = 0;
+                                    estatusIncidencia = 1;
+                                    banderaIncidencia = 0;
+                                    for (RespuestaIncidenciasVO.IncidenciaVO inc : respuestaIncidencias.getListaIncidencias()) {
+                                        if (inc.getArticuloId() == articuloId) {
+                                            incidencia = 1;
+                                            if (inc.getEstatusDiferencia() == 0) {
+                                                estatusIncidencia = 0;
+                                                banderaIncidencia = 1;
+                                            }
+                                        }
+                                    }
+
+                                    if (incidencia == 0) {
+                                        final ViewDialogoGenerico dialogo = new ViewDialogoGenerico(CargaCodigosBarraActivity.this);
+                                        dialogo.showDialog(CargaCodigosBarraActivity.this, "Faltan cajas por verificar del artículo " + descripcionCodigoBarras + ". ¿Desea generar una incidencia de faltante?", "Aceptar", "Regresar", "", true);
+                                        dialogo.setViewDialogoGenericoListener(new ViewDialogoGenerico.ViewDialogoGenericoListener() {
+                                            @Override
+                                            public void onVerde() {
+                                                indicadorProceso = "2";
+                                                if (obtieneArticulosIncidencia(false, articuloId) != "") {
+                                                    consultaIncidencias(false, articuloId, 7);
+                                                }
+                                            }
+
+                                            @Override
+                                            public void onRojo() {
+                                                codigoBarras = codigoActual;
+                                            }
+
+                                            @Override
+                                            public void onExtra() {
+
+                                            }
+                                        });
+                                    } else {
+                                        if (estatusIncidencia == 0) {
+                                            ViewDialog alert = new ViewDialog(CargaCodigosBarraActivity.this);
+                                            alert.showDialog(CargaCodigosBarraActivity.this, "Solicita la autorización de la incidencia al encargado de almacén para continuar", null, TiposAlert.ERROR);
+                                        } else {
+                                            codigoActual = codigoBarras;
+                                            actualizaValores(true);
+                                        }
+                                    }
+                                }
+                            }
+                            // ----------------------------------
+                            else if (opcion == 4) {
+                                if (respuestaIncidencias.getCodigo() == 0) {
+                                    Toast toast1 = Toast.makeText(getApplicationContext(),
+                                            "Incidencias generadas con éxito", Toast.LENGTH_SHORT);
+                                    toast1.show();
+                                    finalizaConteo();
+                                }
+                            }
+                            // ----------------------------------
+                            else if (opcion == 5) {
+                                if (respuestaIncidencias.getCodigo() == 0) {
+                                    incidencia = 0;
+                                    estatusIncidencia = 1;
+                                    for (RespuestaIncidenciasVO.IncidenciaVO inc : respuestaIncidencias.getListaIncidencias()) {
+                                        incidencia = 1;
+                                        if (inc.getEstatusDiferencia() == 0) {
+                                            estatusIncidencia = 0;
+                                        }
+                                    }
+
+                                    if (incidencia == 1) {
+                                        if (estatusIncidencia == 0) {
+                                            ViewDialog alert = new ViewDialog(CargaCodigosBarraActivity.this);
+                                            alert.showDialog(CargaCodigosBarraActivity.this, "Existen incidencias sin autorizar, comunícate con el encargado de almacén para continuar", null, TiposAlert.ERROR);
+                                        } else {
+                                            indicadorProceso = "2";
+                                            if (obtieneArticulosIncidencia(true, 0) != "") {//finalizar-obtieneIncidencias
+                                                consultaIncidencias(true, 0, 6);//genera Incidenacias - finalizado - opcion 6
+                                            } else {
+                                                finalizaConteo();
+                                            }
+                                        }
+                                    } else {
+                                        indicadorProceso = "2";
+                                        if (obtieneArticulosIncidencia(true, 0) != "") {
+                                            consultaIncidencias(true, 0, 6);
+                                        } else {
+                                            finalizaConteo();
+                                        }
+                                    }
+                                }
+                            } else if (opcion == 6) {
+
+                                if (respuestaIncidencias.getCodigo() == 0) {
+                                    banderaIncidencia = 1;
+                                    Toast toast1 = Toast.makeText(getApplicationContext(),
+                                            "Incidencias generadas con éxito", Toast.LENGTH_SHORT);
+                                    toast1.show();
+
+                                    ViewDialog alert = new ViewDialog(CargaCodigosBarraActivity.this);
+                                    alert.showDialog(CargaCodigosBarraActivity.this, "Solicita la autorización de la incidencia al encargado de almacén para continuar", null, TiposAlert.ERROR);
+                                }
+                            } else if (opcion == 7) {
+                                if (respuestaIncidencias.getCodigo() == 0) {
+                                    banderaIncidencia = 1;
+                                    Toast toast1 = Toast.makeText(getApplicationContext(),
+                                            "Incidencias generadas con éxito", Toast.LENGTH_SHORT);
+                                    toast1.show();
+
+
+                                    ViewDialog alert = new ViewDialog(CargaCodigosBarraActivity.this);
+                                    alert.showDialog(CargaCodigosBarraActivity.this, "Solicita la autorización de la incidencia al encargado de almacén para continuar", null, TiposAlert.ERROR);
+                                }
+                            }
+                            // ----------------------------------
+
+                            if (respuestaIncidencias.getCodigo() != 0) {
+                                if (indicadorProceso == "1") {
+                                    ViewDialog alert = new ViewDialog(CargaCodigosBarraActivity.this);
+                                    alert.showDialog(CargaCodigosBarraActivity.this, "Ocurrió un error al consultar incidencias", null, TiposAlert.ERROR);
+                                }
+                                if (indicadorProceso == "2") {
+                                    ViewDialog alert = new ViewDialog(CargaCodigosBarraActivity.this);
+                                    alert.showDialog(CargaCodigosBarraActivity.this, "Ocurrió un error al generar incidencias", null, TiposAlert.ERROR);
+                                }
+                            }
+                        }else {
+                            System.out.println("*** 2 ***");
+                            //cuando el tiempo del servicio exedio el timeout
+                            ViewDialog alert = new ViewDialog(CargaCodigosBarraActivity.this);
+                            alert.showDialog(CargaCodigosBarraActivity.this, "Ocurrió un problema al generar las incidencias", null, TiposAlert.ERROR);
+                        }
+                    }
+                });
+
+
+
+
+
+
+
+
+
+
+                /*StringRequest strRequest = new StringRequest(Request.Method.POST, url,
                         new Response.Listener<String>() {
                             @Override
                             public void onResponse(String response) {
@@ -1384,7 +1692,7 @@ public class CargaCodigosBarraActivity extends AppCompatActivity {
                         20000,
                         DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
                         DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-                AppController.getInstance().addToRequestQueue(strRequest, "tag");
+                AppController.getInstance().addToRequestQueue(strRequest, "tag");*/
             } catch (Exception me) {
                 mDialog.dismiss();
 //                System.out.println("*** No existe comunicación ***");

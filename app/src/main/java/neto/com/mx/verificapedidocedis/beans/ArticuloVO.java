@@ -2,6 +2,7 @@ package neto.com.mx.verificapedidocedis.beans;
 
 import java.io.Serializable;
 import java.util.HashSet;
+import java.util.List;
 
 /**
  * Created by yruizm on 30/10/16.
@@ -20,6 +21,14 @@ public class ArticuloVO implements Serializable {
     private int unidadMedidaId;
     private boolean esCapturado = false;
     private boolean esBuscadoDiferencias = false;
+
+
+    private int codigo;
+    private String mensaje;
+    private List<ArticuloVO> listaArticulo;
+
+
+
 
     public int getNormaPallet() {
         return normaPallet;
@@ -113,21 +122,28 @@ public class ArticuloVO implements Serializable {
     public void setEsBuscadoDiferencias(boolean esBuscadoDiferencias) {
         this.esBuscadoDiferencias = esBuscadoDiferencias;
     }
-
-    @Override
-    public String toString() {
-        return "ArticuloVO{" +
-                "articuloId=" + articuloId +
-                ", codigos=" + codigos +
-                ", totalCajasEmbarcadas=" + totalCajasAsignadas +
-                ", totalCajasRecibidas=" + totalCajasVerificadas +
-                ", nombreArticulo='" + nombreArticulo + '\'' +
-                ", normaEmpaque=" + normaEmpaque +
-                ", unidadMedida='" + unidadMedida + '\'' +
-                ", unidadMedidaId=" + unidadMedidaId +
-                ", esCapturado=" + esCapturado +
-                ", esBuscadoDiferencias=" + esBuscadoDiferencias +
-                ", normaPallet=" + normaPallet +
-                '}';
+    public int getCodigo() {
+        return codigo;
     }
+
+    public void setCodigo(int codigo) {
+        this.codigo = codigo;
+    }
+
+    public String getMensaje() {
+        return mensaje;
+    }
+
+    public void setMensaje(String mensaje) {
+        this.mensaje = mensaje;
+    }
+
+    public List<ArticuloVO> getListaArticulo() {
+        return listaArticulo;
+    }
+
+    public void setListaArticulo(List<ArticuloVO> listaArticulo) {
+        this.listaArticulo = listaArticulo;
+    }
+
 }
