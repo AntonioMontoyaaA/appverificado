@@ -28,4 +28,9 @@
     <color name="colorNaranjaLoading">#F50005</color>
     <color name="colorNetoLogin">#22324B</color>
     <color name="colorBackVerifica">#f1fcf9</color>
+
+
+    <color name="colorVino">#b73e41</color>
+    <color name="colorOliva">#16a085</color>
+    <color name="colorAmarillo">#fbde71</color>
 </resources>

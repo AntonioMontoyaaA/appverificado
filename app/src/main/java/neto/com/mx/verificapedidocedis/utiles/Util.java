@@ -43,7 +43,23 @@ public class Util {
         properties.load(inputStream);
         return properties.getProperty(key);
 
-    }/////////////////////////////////////////////ValidaUsuario//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    }
+
+
+
+
+    public static final String HEX_DIGITS = "0123456789ABCDEF";
+    public static String HexadecilaToDecimal(String hexaNumber) {
+        char[] sources = hexaNumber.toCharArray();
+        long dec = 0;
+        for (int i = 0; i < sources.length; i++) {
+            int digit = HEX_DIGITS.indexOf(Character.toUpperCase(sources[i]));
+            dec += digit * Math.pow(16, (sources.length - (i + 1)));
+        }
+        return String.valueOf(dec);
+    }
+
+    /////////////////////////////////////////////ValidaUsuario//////////////////////////////////////////////////////////////////////////////////////////////////////////////
     public UsuarioVO parseRespuestaValidaUsuario(SoapObject servicio, Context context) {
         final String str = servicio.toString();
         Log.d(TAG, "parseRespuestaValidaUsuario: " + str);

@@ -4,4 +4,12 @@
     <string name="edit_message">Enter a message</string>
     <string name="folio_pedido">Escanea el folio del pedido</string>
     <string name="llave_sian">Escanea la llave</string>
+
+
+
+
+
+    <string name="app_id">5</string><!--verificaBanda ~~ cambia respecto a la app-->
+
+    <string name="request_sinrespuesta">No se obtubo respuesta.</string>
 </resources>
