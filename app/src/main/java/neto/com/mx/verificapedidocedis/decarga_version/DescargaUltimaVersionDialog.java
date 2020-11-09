@@ -16,6 +16,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.FileProvider;
 import android.telephony.TelephonyManager;
@@ -369,7 +370,8 @@ public class DescargaUltimaVersionDialog extends Activity {
             // for ActivityCompat#requestPermissions for more details.
             return;
         }
-        String imeii = telephonyManager.getDeviceId();
+        //String imeii = telephonyManager.getDeviceId();
+        String imeii = Settings.Secure.getString( getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID);
         String version = null;
         try {
             version = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
@@ -427,7 +429,7 @@ public class DescargaUltimaVersionDialog extends Activity {
 
         GlobalShare.getInstace().setVersionVerificado(false);
 
-        cuerpoPeticion.add(new ParametroCuerpo(1, "Long", imeii));//IMEII
+        cuerpoPeticion.add(new ParametroCuerpo(1, "String", imeii));//IMEII
         cuerpoPeticion.add(new ParametroCuerpo(2, "Long", aplicacionId));//IDAPP
         cuerpoPeticion.add(new ParametroCuerpo(3, "String", versionActual));//VERSIONACTUAL
         cuerpoPeticion.add(new ParametroCuerpo(idxVersion, ":String", ""));//Version por actualizar

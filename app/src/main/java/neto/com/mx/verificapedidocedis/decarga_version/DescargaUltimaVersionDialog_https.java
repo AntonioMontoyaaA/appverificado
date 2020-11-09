@@ -10,6 +10,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.provider.Settings;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -589,7 +590,8 @@ public class DescargaUltimaVersionDialog_https extends Activity implements Escuc
 
         String aplicacionId = getResources().getString( R.string.app_id);
 
-        String imeii = identidadDispositivo; // telephonyManager.getDeviceId();
+        //String imeii = identidadDispositivo; // telephonyManager.getDeviceId();
+        String imeii = Settings.Secure.getString( getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID);
         String version = null;
         try {
             version = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;

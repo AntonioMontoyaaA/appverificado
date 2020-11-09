@@ -41,8 +41,11 @@ public class Constantes {
 
 
 
+    //QA
+    //public static final String CADENA_CONEXION   = "http://10.81.12.46:7777/WSGenericoMovil/ssl/servicio/consultaGenericaDinamica";
+    //DESA
+    public static final String CADENA_CONEXION   =   "http://10.81.12.45:7777/WSGenericoMovil/ssl/servicio/consultaGenericaDinamica";
 
-    public static final String CADENA_CONEXION   = "http://10.81.12.46:7777/WSGenericoMovil/ssl/servicio/consultaGenericaDinamica";
 
     //Pre QA
     //public static final String CADENA_CONEXION = "https://10.37.140.202:4443/WSGenericoMovil/ssl/servicio/consultaGenericaDinamica";
