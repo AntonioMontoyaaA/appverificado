@@ -3,10 +3,16 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="neto.com.mx.verificapedidocedis">
 
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.DOWNLOAD_WITHOUT_NOTIFICATION" />
+    <uses-permission android:name="android.permission.INSTALL_PACKAGES"
+        tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
 
     <application
         android:name=".AppController"
@@ -23,7 +29,7 @@
         <activity
             android:name=".SplashScreenActivity"
             android:screenOrientation="portrait"
-            tools:ignore="LockedOrientationActivity">
+            tools:ignore="Instantiatable,LockedOrientationActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -33,34 +39,34 @@
         <activity
             android:name=".CargaCodigosBarraActivity"
             android:screenOrientation="portrait"
-            tools:ignore="LockedOrientationActivity"
+            tools:ignore="Instantiatable,LockedOrientationActivity"
             android:windowSoftInputMode="stateAlwaysHidden"/>
         <activity
             android:name=".CargaFolioPedidoActivity"
             android:screenOrientation="portrait"
-            tools:ignore="LockedOrientationActivity"
+            tools:ignore="Instantiatable,LockedOrientationActivity"
             android:windowSoftInputMode="stateAlwaysHidden"/>
         <activity
             android:name=".ConsultaAvanceActivity"
             android:screenOrientation="portrait"
-            tools:ignore="LockedOrientationActivity" />
+            tools:ignore="Instantiatable,LockedOrientationActivity" />
         <activity
             android:name=".ConteoDiferenciasActivity"
             android:screenOrientation="portrait"
-            tools:ignore="LockedOrientationActivity"
+            tools:ignore="Instantiatable,LockedOrientationActivity"
             android:windowSoftInputMode="stateAlwaysHidden"/>
         <activity
             android:name=".DiferenciasRecibidasActivity"
             android:screenOrientation="portrait"
-            tools:ignore="LockedOrientationActivity" />
+            tools:ignore="Instantiatable,LockedOrientationActivity" />
         <activity
             android:name=".FinalizaActivity"
             android:screenOrientation="portrait"
-            tools:ignore="LockedOrientationActivity" />
+            tools:ignore="Instantiatable,LockedOrientationActivity" />
         <activity
             android:name=".LoginActivity"
             android:screenOrientation="portrait"
-            tools:ignore="LockedOrientationActivity" />
+            tools:ignore="Instantiatable,LockedOrientationActivity" />
 
         <activity
             android:name=".decarga_version.DescargaUltimaVersionDialog_https"
@@ -75,9 +81,32 @@
                 <!--<data android:scheme="content" />-->
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".decarga_version.DescargaUltimaVersionDialogPrueba"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Dialog" >
+            <intent-filter  android:priority="1">
+                <action android:name="android.intent.action.VIEW" />
+                <action android:name="android.intent.action.INSTALL_PACKAGE" />
+                <data android:mimeType="application/vnd.android.package-archive" />
+                <!--<category android:name="android.intent.category.DEFAULT" />-->
+                <data android:scheme="file" />
+                <!--<data android:scheme="content" />-->
+            </intent-filter>
+        </activity>
         <activity android:name=".CargaZonasDisponiblesActivity"
             android:screenOrientation="portrait"
-            tools:ignore="LockedOrientationActivity"></activity>
+            tools:ignore="Instantiatable,LockedOrientationActivity"></activity>
+        <provider
+            android:name="android.support.v4.content.FileProvider"
+            android:authorities="${applicationId}.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/provider_paths"/>
+        </provider>
     </application>
 
 </manifest>

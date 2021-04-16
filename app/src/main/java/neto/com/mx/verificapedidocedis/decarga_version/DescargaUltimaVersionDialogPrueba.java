@@ -1,6 +1,5 @@
 package neto.com.mx.verificapedidocedis.decarga_version;
 
-import android.Manifest;
 import android.app.Activity;
 import android.app.DownloadManager;
 import android.content.BroadcastReceiver;
@@ -18,7 +17,6 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.provider.Settings;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.FileProvider;
 import android.telephony.TelephonyManager;
 import android.util.Log;
@@ -42,10 +40,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
 
+
 import neto.com.mx.verificapedidocedis.BuildConfig;
 import neto.com.mx.verificapedidocedis.R;
 import neto.com.mx.verificapedidocedis.SplashScreenActivity;
-import neto.com.mx.verificapedidocedis.cliente.ClienteSSLConsultaGenerica;
+import neto.com.mx.verificapedidocedis.cliente.ClienteConsultaGenericaPrueba2;
 import neto.com.mx.verificapedidocedis.cliente.HandlerRespuestasVolley;
 import neto.com.mx.verificapedidocedis.mensajes.ParametroCuerpo;
 import neto.com.mx.verificapedidocedis.mensajes.RespuestaDinamica;
@@ -53,12 +52,19 @@ import neto.com.mx.verificapedidocedis.mensajes.SolicitudServicio;
 import neto.com.mx.verificapedidocedis.utiles.Constantes;
 import neto.com.mx.verificapedidocedis.utiles.GlobalShare;
 
+//import conteo.mx.com.neto.inventariotienda.cliente.ClienteSSLConsultaGenerica;
+//import conteo.mx.com.neto.inventariotienda.cliente.HandlerRespuestasVolley;
+//import conteo.mx.com.neto.inventariotienda.globales.Constantes;
+//import conteo.mx.com.neto.inventariotienda.globales.GlobalShare;
+//import conteo.mx.com.neto.inventariotienda.mensajes.ParametroCuerpo;
+//import conteo.mx.com.neto.inventariotienda.mensajes.RespuestaDinamica;
+//import conteo.mx.com.neto.inventariotienda.mensajes.SolicitudServicio;
 
 /**
  * Created by dramirezr on 16/02/2018.
  */
 
-public class DescargaUltimaVersionDialog extends Activity {
+public class DescargaUltimaVersionDialogPrueba extends Activity {
     public static final int RESULT_ERROR = 1;
     public static final int RESULT_OK = 0;
     public static final int RESULT_ACCESO_DENEGADO = -1;
@@ -70,7 +76,6 @@ public class DescargaUltimaVersionDialog extends Activity {
     private static final int TIME_WAIT_CLOSE_ACTIVITY_LONG = 5000;
     private static final int TIEMPO_REVISAR_DESCARGA = 500;
     private static final int PRIMER_ELEMENTO = 0;
-
 
     private static class RespuestaCentral {
         public static final int ACCESO_DENEGADO_A_APP = -1;
@@ -99,13 +104,14 @@ public class DescargaUltimaVersionDialog extends Activity {
     TextView textMensajeDescarga;
     ProgressBar progresoDesacarga;
     String version;
+    File archivo;
 
     private void cerrarActivity(long miliSegs) {
-        handler.postDelayed( new Runnable() {
+        handler.postDelayed(new Runnable() {
             public void run() {
                 finish();
             }
-        }, miliSegs );
+        }, miliSegs);
     }
 
     enum VistaActualizacion {INICIAL, DESCARGA, RESULTADO}
@@ -114,146 +120,146 @@ public class DescargaUltimaVersionDialog extends Activity {
     VistaActualizacion vistaAnterior;
 
     private void cambiaVistaYTexto(final VistaActualizacion vista, final String strMensaje) {
-        runOnUiThread( new Runnable() {
+        runOnUiThread(new Runnable() {
             public void run() {
-                txtMensaje.setText( strMensaje );
-                textMensajeDescarga.setText( strMensaje );
-                txtAvisoFinal.setText( strMensaje );
+                txtMensaje.setText(strMensaje);
+                textMensajeDescarga.setText(strMensaje);
+                txtAvisoFinal.setText(strMensaje);
                 if (vistaAnterior != vista) {
                     switch (vista) {
                         case INICIAL:
-                            contInicial.setVisibility( View.VISIBLE );
-                            contDescarga.setVisibility( View.GONE );
-                            txtAvisoFinal.setVisibility( View.GONE );
+                            contInicial.setVisibility( View.VISIBLE);
+                            contDescarga.setVisibility( View.GONE);
+                            txtAvisoFinal.setVisibility( View.GONE);
                             break;
                         case DESCARGA:
-                            contDescarga.setVisibility( View.VISIBLE );
-                            contInicial.setVisibility( View.GONE );
-                            txtAvisoFinal.setVisibility( View.GONE );
+                            contDescarga.setVisibility( View.VISIBLE);
+                            contInicial.setVisibility( View.GONE);
+                            txtAvisoFinal.setVisibility( View.GONE);
                             break;
                         case RESULTADO:
-                            contInicial.setVisibility( View.GONE );
-                            contDescarga.setVisibility( View.GONE );
-                            txtAvisoFinal.setVisibility( View.VISIBLE );
+                            contInicial.setVisibility( View.GONE);
+                            contDescarga.setVisibility( View.GONE);
+                            txtAvisoFinal.setVisibility( View.VISIBLE);
                             break;
                     }
                 }
             }
-        } );
+        });
     }
 
     private void crearVista() {
-        principal = new LinearLayout( this );
-        principal.setLayoutParams( new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT ) );
-        principal.setBackgroundColor( Color.BLACK );
-        principal.setGravity( Gravity.CENTER );
-        principal.setOrientation( LinearLayout.VERTICAL );
+        principal = new LinearLayout(this);
+        principal.setLayoutParams(new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
+        principal.setBackgroundColor( Color.BLACK);
+        principal.setGravity( Gravity.CENTER);
+        principal.setOrientation( LinearLayout.VERTICAL);
 
         int dim9sp = (int) TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP, 9, getResources().getDisplayMetrics() );
+                TypedValue.COMPLEX_UNIT_DIP, 9, getResources().getDisplayMetrics());
         int dim10sp = (int) TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_SP, 10, getResources().getDisplayMetrics() );
+                TypedValue.COMPLEX_UNIT_SP, 10, getResources().getDisplayMetrics());
         int dim40sp = (int) TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP, 40, getResources().getDisplayMetrics() );
+                TypedValue.COMPLEX_UNIT_DIP, 40, getResources().getDisplayMetrics());
         int dim20sp = (int) TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP, 20, getResources().getDisplayMetrics() );
+                TypedValue.COMPLEX_UNIT_DIP, 20, getResources().getDisplayMetrics());
 
-        principal.setPadding( dim20sp, dim20sp, dim20sp, dim20sp );
+        principal.setPadding(dim20sp, dim20sp, dim20sp, dim20sp);
 
-        contInicial = new LinearLayout( this );
-        contInicial.setLayoutParams( new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT ) );
+        contInicial = new LinearLayout(this);
+        contInicial.setLayoutParams(new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
 
-        ProgressBar progressBar = new ProgressBar( this, null, android.R.attr.progressBarStyle );
+        ProgressBar progressBar = new ProgressBar(this, null, android.R.attr.progressBarStyle);
         int widthProgressBar = (int) TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP, 100f, getResources().getDisplayMetrics() );
+                TypedValue.COMPLEX_UNIT_DIP, 100f, getResources().getDisplayMetrics());
         LinearLayout.LayoutParams linearLayoutParamsProgress = new LinearLayout.LayoutParams(
-                widthProgressBar, LinearLayout.LayoutParams.WRAP_CONTENT, 0.9f );
+                widthProgressBar, LinearLayout.LayoutParams.WRAP_CONTENT, 0.9f);
 
-        progressBar.setLayoutParams( linearLayoutParamsProgress );
+        progressBar.setLayoutParams(linearLayoutParamsProgress);
 
-        contInicial.addView( progressBar );
+        contInicial.addView(progressBar);
 
-        scroll = new ScrollView( this );
-        scroll.setFillViewport( true );
-        scroll.setHorizontalScrollBarEnabled( true );
-        scroll.setVerticalScrollBarEnabled( true );
+        scroll = new ScrollView(this);
+        scroll.setFillViewport(true);
+        scroll.setHorizontalScrollBarEnabled(true);
+        scroll.setVerticalScrollBarEnabled(true);
 
-        contInicial.addView( scroll );
+        contInicial.addView(scroll);
 
-        txtMensaje = new TextView( this );
-        txtMensaje.setText( "Verificando versión de aplicación..." );
-        txtMensaje.setTextAlignment( View.TEXT_ALIGNMENT_CENTER );
-        txtMensaje.setGravity( View.TEXT_ALIGNMENT_CENTER );
-        txtMensaje.setTextSize( dim9sp );
+        txtMensaje = new TextView(this);
+        txtMensaje.setText("Verificando versión de aplicación...");
+        txtMensaje.setTextAlignment( View.TEXT_ALIGNMENT_CENTER);
+        txtMensaje.setGravity( View.TEXT_ALIGNMENT_CENTER);
+        txtMensaje.setTextSize(dim9sp);
 
-        txtMensaje.setLayoutParams( new LinearLayout.LayoutParams(
+        txtMensaje.setLayoutParams(new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT, 0.9f
-        ) );
+        ));
         //contInicial.addView(txtMensaje);
-        scroll.addView( txtMensaje );
+        scroll.addView(txtMensaje);
 
-        principal.addView( contInicial );
+        principal.addView(contInicial);
 
-        contDescarga = new LinearLayout( this );
-        contDescarga.setLayoutParams( new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT ) );
-        contDescarga.setOrientation( LinearLayout.VERTICAL );
+        contDescarga = new LinearLayout(this);
+        contDescarga.setLayoutParams(new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+        contDescarga.setOrientation( LinearLayout.VERTICAL);
 
-        textMensajeDescarga = new TextView( this );
-        textMensajeDescarga.setTextAlignment( View.TEXT_ALIGNMENT_CENTER );
+        textMensajeDescarga = new TextView(this);
+        textMensajeDescarga.setTextAlignment( View.TEXT_ALIGNMENT_CENTER);
         textMensajeDescarga.setLayoutParams(
                 new LinearLayout.LayoutParams( LinearLayout.LayoutParams.MATCH_PARENT,
-                        LinearLayout.LayoutParams.WRAP_CONTENT ) );
-        textMensajeDescarga.setTextColor( Color.WHITE );
-        textMensajeDescarga.setTextSize( dim9sp );
+                        LinearLayout.LayoutParams.WRAP_CONTENT));
+        textMensajeDescarga.setTextColor( Color.WHITE);
+        textMensajeDescarga.setTextSize(dim9sp);
 
-        contDescarga.addView( textMensajeDescarga );
+        contDescarga.addView(textMensajeDescarga);
         int progressHeight = (int) TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP, 30, getResources().getDisplayMetrics() );
-        progresoDesacarga = new ProgressBar( this, null, android.R.attr.progressBarStyleHorizontal );
-        progresoDesacarga.setLayoutParams( new LinearLayout.LayoutParams(
+                TypedValue.COMPLEX_UNIT_DIP, 30, getResources().getDisplayMetrics());
+        progresoDesacarga = new ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal);
+        progresoDesacarga.setLayoutParams(new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, progressHeight
-        ) );
-        progresoDesacarga.setMax( 100 );
-        progresoDesacarga.setProgress( 0 );
-        progresoDesacarga.getProgressDrawable().setColorFilter( Color.WHITE, PorterDuff.Mode.SRC_IN );
-        contDescarga.addView( progresoDesacarga );
-        contDescarga.setVisibility( View.GONE );
+        ));
+        progresoDesacarga.setMax(100);
+        progresoDesacarga.setProgress(0);
+        progresoDesacarga.getProgressDrawable().setColorFilter( Color.WHITE, PorterDuff.Mode.SRC_IN);
+        contDescarga.addView(progresoDesacarga);
+        contDescarga.setVisibility( View.GONE);
 
-        principal.addView( contDescarga );
+        principal.addView(contDescarga);
 
-        txtAvisoFinal = new TextView( this );
-        txtAvisoFinal.setTextSize( dim10sp );
-        txtAvisoFinal.setText( "No se podrá continuar usando la aplicación hasta que se haya instalado la nueva versión." );
-        txtAvisoFinal.setTextColor( Color.YELLOW );
-        txtAvisoFinal.setVisibility( View.GONE );
-        txtAvisoFinal.setTextAlignment( View.TEXT_ALIGNMENT_CENTER );
+        txtAvisoFinal = new TextView(this);
+        txtAvisoFinal.setTextSize(dim10sp);
+        txtAvisoFinal.setText("No se podrá continuar usando la aplicación hasta que se haya instalado la nueva versión.");
+        txtAvisoFinal.setTextColor( Color.YELLOW);
+        txtAvisoFinal.setVisibility( View.GONE);
+        txtAvisoFinal.setTextAlignment( View.TEXT_ALIGNMENT_CENTER);
 
-        principal.addView( txtAvisoFinal );
+        principal.addView(txtAvisoFinal);
 
 
-        setContentView( principal );
-        setFinishOnTouchOutside( false );
+        setContentView(principal);
+        setFinishOnTouchOutside(false);
 
         try {
-            version = getPackageManager().getPackageInfo( getPackageName(), 0 ).versionName;
+            version = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
         } catch (PackageManager.NameNotFoundException ne) {
-            Log.e( GlobalShare.logAplicaion, "Error al obtener la versión : " + ne.getMessage() );
+            Log.e( GlobalShare.logAplicaion, "Error al obtener la versión : " + ne.getMessage());
         }
     }
 
     public void onCreate(Bundle savedInstanceState) {
-        super.onCreate( savedInstanceState );
-        requestWindowFeature( Window.FEATURE_NO_TITLE );
+        super.onCreate(savedInstanceState);
+        requestWindowFeature( Window.FEATURE_NO_TITLE);
 
         crearVista();
 
-        IntentFilter filtroDescargaCompleta = new IntentFilter( DownloadManager.ACTION_DOWNLOAD_COMPLETE );
-        registerReceiver( broadcastReceiverDownload, filtroDescargaCompleta );
+        IntentFilter filtroDescargaCompleta = new IntentFilter( DownloadManager.ACTION_DOWNLOAD_COMPLETE);
+        registerReceiver(broadcastReceiverDownload, filtroDescargaCompleta);
 
-        setResult( Activity.RESULT_OK );
+        setResult( Activity.RESULT_OK);
 
         verificarVersion();
     }
@@ -265,58 +271,58 @@ public class DescargaUltimaVersionDialog extends Activity {
 
     private void checarProgreso() {
         DownloadManager.Query query = new DownloadManager.Query();
-        query.setFilterByStatus( ~(DownloadManager.STATUS_FAILED | DownloadManager.STATUS_SUCCESSFUL) );
-        Cursor cur = descargaManager.query( query );
+        query.setFilterByStatus(~(DownloadManager.STATUS_FAILED | DownloadManager.STATUS_SUCCESSFUL));
+        Cursor cur = descargaManager.query(query);
         if (!cur.moveToFirst()) {
             cur.close();
             return;
         }
         do {
-            long referenciaActual = cur.getLong( cur.getColumnIndex( DownloadManager.COLUMN_ID ) );
+            long referenciaActual = cur.getLong(cur.getColumnIndex( DownloadManager.COLUMN_ID));
             if (referenciaActual == refrenciaDescarga) {
 
-                int statusDescarga = cur.getInt( cur.getColumnIndex( DownloadManager.COLUMN_STATUS ) );
+                int statusDescarga = cur.getInt(cur.getColumnIndex( DownloadManager.COLUMN_STATUS));
                 if (statusDescarga == DownloadManager.STATUS_FAILED) {
-                    Log.e( GlobalShare.logAplicaion, getLocalClassName() + " : checarProgreso : La descarga no se completo debido a un error" );
+                    Log.e(GlobalShare.logAplicaion, getLocalClassName() + " : checarProgreso : La descarga no se completo debido a un error");
 
                     cambiaVistaYTexto( VistaActualizacion.RESULTADO, "Se presentó un problema con la descarga de la " +
-                            "nueva versión, se intnteará descargar en el futuro." );
+                            "nueva versión, se intnteará descargar en el futuro.");
 
-                    cerrarActivity( TIME_WAIT_CLOSE_ACTIVITY_LONG );
+                    cerrarActivity(TIME_WAIT_CLOSE_ACTIVITY_LONG);
                     return;
                 }
 
-                Long bytes_total = cur.getLong( cur.getColumnIndex( DownloadManager.COLUMN_TOTAL_SIZE_BYTES ) );
-                Long bytes_so_far = cur.getLong( cur.getColumnIndex( DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR ) );
+                Long bytes_total = cur.getLong(cur.getColumnIndex( DownloadManager.COLUMN_TOTAL_SIZE_BYTES));
+                Long bytes_so_far = cur.getLong(cur.getColumnIndex( DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR));
                 final Float progreso = bytes_so_far == 0l ? 0f : ((bytes_so_far * 1f / bytes_total * 1f) * 100f);
 
-                runOnUiThread( new Runnable() {
+                runOnUiThread(new Runnable() {
                     public void run() {
                         try {
-                            progresoDesacarga.setProgress( progreso.intValue() );
-                            textMensajeDescarga.setText( "Descargando versión " + versionDescargar + " %" +
-                                    String.format( new Locale( "es", "MX" ), "%3.0f", progreso ) );
+                            progresoDesacarga.setProgress(progreso.intValue());
+                            textMensajeDescarga.setText("Descargando versión " + versionDescargar + " %" +
+                                    String.format(new Locale("es", "MX"), "%3.0f", progreso));
                         } catch (Exception e) {
-                            Log.e( GlobalShare.logAplicaion, getClass() + " : checarProgreso : " + e.getMessage(), e );
+                            Log.e(GlobalShare.logAplicaion, getClass() + " : checarProgreso : " + e.getMessage(), e);
                         }
                     }
-                } );
+                });
 
                 if (statusDescarga == DownloadManager.STATUS_SUCCESSFUL) {
                 } else {
-                    int reazon = cur.getInt( cur.getColumnIndex( DownloadManager.COLUMN_REASON ) );
-                    Log.e( GlobalShare.logAplicaion, getClass() +
+                    int reazon = cur.getInt(cur.getColumnIndex( DownloadManager.COLUMN_REASON));
+                    Log.e(GlobalShare.logAplicaion, getClass() +
                             " : checarProgreso : Revisión de estatus de descarga : " +
                             " : Intento núm: " + intentosDescargaRealizados + " - " +
-                            "estatusId: " + statusDescarga + ", razon: " + getDownloadErrorReazon( statusDescarga, reazon ) );
+                            "estatusId: " + statusDescarga + ", razon: " + getDownloadErrorReazon(statusDescarga, reazon));
                     if (intentosDescargaRealizados++ == MAX_INTENTOS_DESCARGA) {
                         if (statusDescarga == DownloadManager.STATUS_PAUSED &&
                                 reazon == DownloadManager.PAUSED_WAITING_TO_RETRY) {
                             cambiaVistaYTexto( VistaActualizacion.RESULTADO, "Se presentó un problema con la descarga, " +
-                                    "se intentará descargar en el futuro." );
-                            descargaManager.remove( referenciaActual );
-                            setResult( RESULT_ERROR );
-                            cerrarActivity( TIME_WAIT_CLOSE_ACTIVITY_LONG );
+                                    "se intentará descargar en el futuro.");
+                            descargaManager.remove(referenciaActual);
+                            setResult(RESULT_ERROR);
+                            cerrarActivity(TIME_WAIT_CLOSE_ACTIVITY_LONG);
                         }
                     }
                 }
@@ -324,7 +330,7 @@ public class DescargaUltimaVersionDialog extends Activity {
 
         } while (cur.moveToNext());
         if (!descargaTerminada)
-            handler.postDelayed( chequer, TIEMPO_REVISAR_DESCARGA );
+            handler.postDelayed(chequer, TIEMPO_REVISAR_DESCARGA);
     }
 
     private Runnable chequer = new Runnable() {
@@ -333,7 +339,7 @@ public class DescargaUltimaVersionDialog extends Activity {
             try {
                 checarProgreso();
             } catch (Exception e) {
-                handler.postDelayed( chequer, TIEMPO_REVISAR_DESCARGA );
+                handler.postDelayed(chequer, TIEMPO_REVISAR_DESCARGA);
             }
         }
     };
@@ -341,7 +347,7 @@ public class DescargaUltimaVersionDialog extends Activity {
     public void iniciaChequeoProgreso() {
         intentosDescargaRealizados = 0;
         cambiaVistaYTexto( VistaActualizacion.DESCARGA,
-                "Descargando versión " + versionDescargar + "       %" + String.format( "%3.1f", 0f ) );
+                "Descargando versión " + versionDescargar + "       %" + String.format("%3.1f", 0f));
         if (!isChequerRunning) {
             chequer.run();
             isChequerRunning = true;
@@ -350,18 +356,18 @@ public class DescargaUltimaVersionDialog extends Activity {
 
     public void verificarVersion() {
         if (GlobalShare.getInstace().getVersionVerificado()) {
-            setResult( RESULT_OK );
-            Log.w( GlobalShare.logAplicaion, "Versión y acceso verificados..." );
-            cambiaVistaYTexto( VistaActualizacion.RESULTADO, "Versión y acceso verificados..." );
-            cerrarActivity( TIME_WAIT_CLOSE_ACTIVITY_SHORT );
+            setResult(RESULT_OK);
+            Log.w(GlobalShare.logAplicaion, "Versión y acceso verificados...");
+            cambiaVistaYTexto( VistaActualizacion.RESULTADO, "Versión y acceso verificados...");
+            cerrarActivity(TIME_WAIT_CLOSE_ACTIVITY_SHORT);
             return;
         }
 
         String mensajeError = null;
-        TelephonyManager telephonyManager = (TelephonyManager) getSystemService( Context.TELEPHONY_SERVICE );
+        TelephonyManager telephonyManager = (TelephonyManager) getSystemService( Context.TELEPHONY_SERVICE);
 
-        String aplicacionId = getResources().getString( R.string.app_id );
-        if (ActivityCompat.checkSelfPermission( this, Manifest.permission.READ_PHONE_STATE ) != PackageManager.PERMISSION_GRANTED) {
+        String aplicacionId = getResources().getString( R.string.app_id);
+        /*if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
             //    ActivityCompat#requestPermissions
             // here to request the missing permissions, and then overriding
@@ -370,9 +376,8 @@ public class DescargaUltimaVersionDialog extends Activity {
             // to handle the case where the user grants the permission. See the documentation
             // for ActivityCompat#requestPermissions for more details.
             return;
-        }
-        //String imeii = telephonyManager.getDeviceId(); primerVersion
-        String imeii = Settings.Secure.getString( SplashScreenActivity.getMyContext().getContentResolver(), Settings.Secure.ANDROID_ID);
+        }*/
+        String imeii = Settings.Secure.getString( getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID);
         String version = null;
         try {
             version = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
@@ -389,7 +394,7 @@ public class DescargaUltimaVersionDialog extends Activity {
         } else if (versionActual == null || versionActual.isEmpty()) {
             mensajeError = "No ha configurado la versión actual de esta aplicación.";
         } else if (imeii == null || imeii.isEmpty()) {
-            mensajeError = "No fue posible leer el IMEII de este dispositivo.";
+            mensajeError = "No fue posible leer el identificador de este dispositivo.";
         } else {
             errorConf = false;
         }
@@ -400,9 +405,9 @@ public class DescargaUltimaVersionDialog extends Activity {
             return;
         }
 
-        File archivos = getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS);
+        File archivos = getExternalFilesDir( Environment.DIRECTORY_DOWNLOADS);
         Log.d(GlobalShare.logAplicaion, "Buscando al archivo que contenga: "+versionActual + ".apk");
-        File[] encontrados = archivos.listFiles(new FileFilter() {
+        File[] encontrados = archivos.listFiles( new FileFilter() {
             public boolean accept(File pathname) {
                 return pathname.getName().contains(versionActual+".apk");
             }
@@ -430,16 +435,14 @@ public class DescargaUltimaVersionDialog extends Activity {
 
         GlobalShare.getInstace().setVersionVerificado(false);
 
+        //cuerpoPeticion.add(new ParametroCuerpo(1, "Long", imeii));//IMEII
         cuerpoPeticion.add(new ParametroCuerpo(1, "String", imeii));//IMEII
-        //cuerpoPeticion.add(new ParametroCuerpo(1, "String", "345678654343554"));//IMEII
         cuerpoPeticion.add(new ParametroCuerpo(2, "Long", aplicacionId));//IDAPP
         cuerpoPeticion.add(new ParametroCuerpo(3, "String", versionActual));//VERSIONACTUAL
         cuerpoPeticion.add(new ParametroCuerpo(idxVersion, ":String", ""));//Version por actualizar
         cuerpoPeticion.add(new ParametroCuerpo(idxUrlDescarga, ":String", ""));//URL Desacarga
         cuerpoPeticion.add(new ParametroCuerpo(idxIdError, "::Int", "0"));
         cuerpoPeticion.add(new ParametroCuerpo(idxMensaje, "::String", "0"));
-
-        System.out.println( "////////////////////////////////////////////////imeii" + imeii+ " aplicacionId "+ aplicacionId + " versionActual " + versionActual);
 
         runOnUiThread(new Runnable() {
             public void run() {
@@ -449,7 +452,7 @@ public class DescargaUltimaVersionDialog extends Activity {
         });
 
         SolicitudServicio solicitud = new SolicitudServicio("VERIFICAVERSION", cuerpoPeticion);
-        ClienteSSLConsultaGenerica cliente = new ClienteSSLConsultaGenerica(
+        ClienteConsultaGenericaPrueba2 cliente = new ClienteConsultaGenericaPrueba2(
                 Constantes.CADENA_CONEXION,
                 this,
                 solicitud,
@@ -494,12 +497,13 @@ public class DescargaUltimaVersionDialog extends Activity {
                             GlobalShare.getInstace().setAccesoVerificado(true);
                             if (idOperacionRealizar == RespuestaCentral.NO_ES_NECESARIO_ACTUALIZAR) {//ok
                                 GlobalShare.getInstace().setVersionVerificado(true);
-                                SplashScreenActivity.bandera_bloqueaUsuario = false;
 
+                                SplashScreenActivity.bandera_bloqueaUsuario = false;
                                 SharedPreferences preferences = getSharedPreferences( "bloqueaUsuario",Context.MODE_PRIVATE );
                                 SharedPreferences.Editor editor = preferences.edit();
                                 editor.putBoolean( "bloquear",false );
                                 editor.commit();
+                                System.out.println("valor de nuevo BloqueaUsuarioSharedPreferences1 : false"  );
 
                                 setResult(RESULT_OK);//Log.d(GlobalShare.logAplicaion, "No es necesario actualizar la versión");
                                 cambiaVistaYTexto( VistaActualizacion.RESULTADO, "No es necesario actualizar la versión.");
@@ -507,37 +511,38 @@ public class DescargaUltimaVersionDialog extends Activity {
                                 return;
                             } else if (idOperacionRealizar == RespuestaCentral.ACTUALIZAR_VERSION_ESTABLE) {//cambiaVistaYTexto(VistaActualizacion.INICIAL, "Se requiere instalar actualización");
                                 Log.w(GlobalShare.logAplicaion, descripOpRealizar);
-                                SplashScreenActivity.bandera_bloqueaUsuario = false;
 
+                                SplashScreenActivity.bandera_bloqueaUsuario = false;
                                 SharedPreferences preferences = getSharedPreferences( "bloqueaUsuario",Context.MODE_PRIVATE );
                                 SharedPreferences.Editor editor = preferences.edit();
                                 editor.putBoolean( "bloquear",false );
                                 editor.commit();
+                                System.out.println("valor de nuevo BloqueaUsuarioSharedPreferences1 : false"  );
 
                                 cambiaVistaYTexto( VistaActualizacion.INICIAL, getPrimerElementoPipeOTodoNoPipe(descripOpRealizar));
                             } else if (idOperacionRealizar == RespuestaCentral.ACTUALIZAR_NUEVA_VERSION) {//cambiaVistaYTexto(VistaActualizacion.INICIAL, "Se requiere hacer Downgrade...");
                                 Log.w(GlobalShare.logAplicaion, descripOpRealizar);
-                                SplashScreenActivity.bandera_bloqueaUsuario = false;
 
+                                SplashScreenActivity.bandera_bloqueaUsuario = false;
                                 SharedPreferences preferences = getSharedPreferences( "bloqueaUsuario",Context.MODE_PRIVATE );
                                 SharedPreferences.Editor editor = preferences.edit();
                                 editor.putBoolean( "bloquear",false );
                                 editor.commit();
+                                System.out.println("valor de nuevo BloqueaUsuarioSharedPreferences1 : false"  );
 
                                 cambiaVistaYTexto( VistaActualizacion.INICIAL, getPrimerElementoPipeOTodoNoPipe(descripOpRealizar));
                             } else if (idOperacionRealizar == RespuestaCentral.ACCESO_DENEGADO_A_APP ||
                                     idOperacionRealizar == RespuestaCentral.APPLICACION_INACTIVA) {
                                 setResult(RESULT_ACCESO_DENEGADO);
+                                GlobalShare.getInstace().setAccesoVerificado(false);
 
                                 SplashScreenActivity.bandera_bloqueaUsuario = true;
-
                                 SharedPreferences preferences = getSharedPreferences( "bloqueaUsuario",Context.MODE_PRIVATE );
                                 SharedPreferences.Editor editor = preferences.edit();
                                 editor.putBoolean( "bloquear",true );
                                 editor.commit();
+                                System.out.println("valor de nuevo BloqueaUsuarioSharedPreferences1 : true"  );
 
-
-                                GlobalShare.getInstace().setAccesoVerificado(false);
                                 //cambiaVistaYTexto(VistaActualizacion.INICIAL, "Acceso denegado para este dispositivo...");
                                 cambiaVistaYTexto( VistaActualizacion.RESULTADO, getPrimerElementoPipeOTodoNoPipe(descripOpRealizar));
                                 cerrarActivity(TIME_WAIT_CLOSE_ACTIVITY_LONG);
@@ -545,12 +550,13 @@ public class DescargaUltimaVersionDialog extends Activity {
                             } else if (idOperacionRealizar >= RespuestaCentral.INICIO_RESPUESTAS_ERROR) {
                                 setResult(RESULT_ERROR);
                                 Log.w(GlobalShare.logAplicaion, descripOpRealizar);
-                                SplashScreenActivity.bandera_bloqueaUsuario = false;
 
+                                SplashScreenActivity.bandera_bloqueaUsuario = false;
                                 SharedPreferences preferences = getSharedPreferences( "bloqueaUsuario",Context.MODE_PRIVATE );
                                 SharedPreferences.Editor editor = preferences.edit();
                                 editor.putBoolean( "bloquear",false );
                                 editor.commit();
+                                System.out.println("valor de nuevo BloqueaUsuarioSharedPreferences1 : false"  );
 
                                 cambiaVistaYTexto( VistaActualizacion.RESULTADO, getPrimerElementoPipeOTodoNoPipe(descripOpRealizar));
                                 cerrarActivity(TIME_WAIT_CLOSE_ACTIVITY_LONG);
@@ -558,12 +564,13 @@ public class DescargaUltimaVersionDialog extends Activity {
                             } else {//Casos no contemplados pasan como [ OK ]
                                 setResult(RESULT_OK);
                                 Log.w(GlobalShare.logAplicaion, descripOpRealizar);
-                                SplashScreenActivity.bandera_bloqueaUsuario = false;
 
+                                SplashScreenActivity.bandera_bloqueaUsuario = false;
                                 SharedPreferences preferences = getSharedPreferences( "bloqueaUsuario",Context.MODE_PRIVATE );
                                 SharedPreferences.Editor editor = preferences.edit();
                                 editor.putBoolean( "bloquear",false );
                                 editor.commit();
+                                System.out.println("valor de nuevo BloqueaUsuarioSharedPreferences1 : false"  );
 
                                 cambiaVistaYTexto( VistaActualizacion.INICIAL, getPrimerElementoPipeOTodoNoPipe(descripOpRealizar));
                                 cerrarActivity(TIME_WAIT_CLOSE_ACTIVITY_SHORT);
@@ -576,7 +583,7 @@ public class DescargaUltimaVersionDialog extends Activity {
                             final String urlVerSig = respuesta.getDatosSalida().get(idxUrlDescarga);
 
                             try {
-                                String[] nombre = urlVerSig.split(Matcher.quoteReplacement("/"));
+                                String[] nombre = urlVerSig.split( Matcher.quoteReplacement("/"));
                                 String nombreAPK = nombre[nombre.length - 1];
 
                                 Log.w(GlobalShare.logAplicaion, getClass().getName() +
@@ -585,10 +592,10 @@ public class DescargaUltimaVersionDialog extends Activity {
                                 descargaManager = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
                                 Uri uriDescarga = Uri.parse(urlVerSig);
 
-                                File archivo = new File(getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), nombreAPK);
+                                archivo = new File(getExternalFilesDir( Environment.DIRECTORY_DOWNLOADS), nombreAPK);
 
                                 if (archivo.exists()) {
-                                    cambiaVistaYTexto( VistaActualizacion.RESULTADO, "Se instalará desde las descargas. No será posible usar esta aplicación si la versión más actual.");
+                                    cambiaVistaYTexto( VistaActualizacion.RESULTADO, "Se instalará desde las descargas. No será posible usar esta aplicación sin la versión más actual.");
                                     Log.d(GlobalShare.logAplicaion, getClass().getName() +
                                             " : Archivo encontrado > se instalará desde las descargas...");
 
@@ -598,17 +605,17 @@ public class DescargaUltimaVersionDialog extends Activity {
                                         Log.d(GlobalShare.logAplicaion, getClass().getName() + " : SDK_INT >= N  ...");
                                         uriArchivoEncontrado = FileProvider.getUriForFile(
                                                 getApplicationContext(), BuildConfig.APPLICATION_ID + ".provider", archivo);
-                                        intentInstaller = new Intent(Intent.ACTION_INSTALL_PACKAGE);
+                                        intentInstaller = new Intent( Intent.ACTION_INSTALL_PACKAGE);
                                         intentInstaller.setData(uriArchivoEncontrado);
-                                        intentInstaller.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                                        intentInstaller.setFlags( Intent.FLAG_GRANT_READ_URI_PERMISSION);
                                     }else{
                                         Log.d(GlobalShare.logAplicaion, getClass().getName() + " : ELSE ...");
                                         uriArchivoEncontrado = Uri.fromFile(archivo);
-                                        intentInstaller = new Intent(Intent.ACTION_VIEW);
+                                        intentInstaller = new Intent( Intent.ACTION_VIEW);
                                         intentInstaller.setDataAndType(
                                                 uriArchivoEncontrado,
                                                 "application/vnd.android.package-archive");
-                                        intentInstaller.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                                        intentInstaller.setFlags( Intent.FLAG_ACTIVITY_NEW_TASK| Intent.FLAG_GRANT_READ_URI_PERMISSION);
                                     }
 
                                     Log.d(GlobalShare.logAplicaion, getClass().getName() +
@@ -625,14 +632,14 @@ public class DescargaUltimaVersionDialog extends Activity {
 
                                     Log.d(GlobalShare.logAplicaion, getClass().getName() + " : Archivo no encontrado > se descargará...");
                                     DownloadManager.Request req = new DownloadManager.Request(uriDescarga);
-                                    req.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI | DownloadManager.Request.NETWORK_MOBILE);
+                                    req.setAllowedNetworkTypes( DownloadManager.Request.NETWORK_WIFI | DownloadManager.Request.NETWORK_MOBILE);
                                     req.setAllowedOverRoaming(false);
-                                    req.setNotificationVisibility(DownloadManager.Request.VISIBILITY_HIDDEN);
+                                    req.setNotificationVisibility( DownloadManager.Request.VISIBILITY_HIDDEN);
                                     //req.setVisibleInDownloadsUi(false);
                                     req.setTitle("Actualización");
                                     req.setDescription("Descargando nueva versión...");
                                     req.setDestinationInExternalFilesDir(
-                                            DescargaUltimaVersionDialog.this,
+                                            DescargaUltimaVersionDialogPrueba.this,
                                             Environment.DIRECTORY_DOWNLOADS,
                                             nombreAPK
                                     );
@@ -713,8 +720,8 @@ public class DescargaUltimaVersionDialog extends Activity {
     boolean descargaTerminada = false;
     private BroadcastReceiver broadcastReceiverDownload = new BroadcastReceiver() {
         public void onReceive(Context contexto, Intent intent) {
-            long idReferencia = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1);
-            intent.getIntExtra(DownloadManager.EXTRA_NOTIFICATION_CLICK_DOWNLOAD_IDS, -1);
+            long idReferencia = intent.getLongExtra( DownloadManager.EXTRA_DOWNLOAD_ID, -1);
+            intent.getIntExtra( DownloadManager.EXTRA_NOTIFICATION_CLICK_DOWNLOAD_IDS, -1);
             Uri uriURLDescarga = null;
             if (refrenciaDescarga == idReferencia) {
                 uriURLDescarga = descargaManager.getUriForDownloadedFile(refrenciaDescarga);
@@ -722,19 +729,38 @@ public class DescargaUltimaVersionDialog extends Activity {
                     cambiaVistaYTexto( VistaActualizacion.RESULTADO,"Versión " + versionDescargar + " descargada con éxito.");
                     progresoDesacarga.setProgress(100);
 
-                    Intent intentInstaller = new Intent(Intent.ACTION_VIEW);
-                    intentInstaller.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                    intentInstaller.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    Uri uriArchivoEncontrado = null;
+                    Intent intentInstaller = null;
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        Log.d(GlobalShare.logAplicaion, getClass().getName() + " : SDK_INT >= N  ...");
+                        uriArchivoEncontrado = FileProvider.getUriForFile(
+                                getApplicationContext(), BuildConfig.APPLICATION_ID + ".provider", archivo);
+                        intentInstaller = new Intent( Intent.ACTION_INSTALL_PACKAGE);
+                        intentInstaller.setData(uriArchivoEncontrado);
+                        intentInstaller.setFlags( Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    }else{
+                        Log.d(GlobalShare.logAplicaion, getClass().getName() + " : ELSE ...");
+                        uriArchivoEncontrado = Uri.fromFile(archivo);
+                        intentInstaller = new Intent( Intent.ACTION_VIEW);
+                        intentInstaller.setDataAndType(
+                                uriArchivoEncontrado,
+                                "application/vnd.android.package-archive");
+                        intentInstaller.setFlags( Intent.FLAG_ACTIVITY_NEW_TASK| Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    }
+                    /*Intent intentInstaller = new Intent( Intent.ACTION_VIEW);
+                    intentInstaller.setFlags( Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    intentInstaller.setFlags( Intent.FLAG_ACTIVITY_NEW_TASK);
                     intentInstaller.setDataAndType(
                             uriURLDescarga,"application/vnd.android.package-archive");
 
                     Log.e(GlobalShare.logAplicaion,
-                            getClass().getName() + uriURLDescarga.getPath());
+                            getClass().getName() + uriURLDescarga.getPath());*/
 
                     descargaTerminada = true;
 
-                    Log.d(GlobalShare.logAplicaion, getClass().getName() + " : Iniciando la instalación de la ultima versión...");
-                    cambiaVistaYTexto( VistaActualizacion.RESULTADO,"Inicia instalación...");
+                    Log.e(GlobalShare.logAplicaion, getClass().getName()+ " : Iniciando la instalación de la ultima versión...");
+                    //cambiaVistaYTexto(VistaActualizacion.RESULTADO,"Inicia instalación...");
+                    cambiaVistaYTexto( VistaActualizacion.RESULTADO,"Iniciando instalación, No será posible seguir usando la aplicación hasta que se realice la instalación...");
                     startActivity(intentInstaller);
                 }else{
                     cambiaVistaYTexto( VistaActualizacion.RESULTADO,

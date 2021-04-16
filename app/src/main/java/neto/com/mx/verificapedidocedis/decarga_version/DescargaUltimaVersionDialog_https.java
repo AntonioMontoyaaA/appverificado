@@ -1,7 +1,9 @@
 package neto.com.mx.verificapedidocedis.decarga_version;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
@@ -52,8 +54,8 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
-
 import neto.com.mx.verificapedidocedis.R;
+import neto.com.mx.verificapedidocedis.SplashScreenActivity;
 import neto.com.mx.verificapedidocedis.cliente.ClienteSSLConsultaGenerica;
 import neto.com.mx.verificapedidocedis.cliente.HandlerRespuestasVolley;
 import neto.com.mx.verificapedidocedis.mensajes.ParametroCuerpo;
@@ -62,7 +64,7 @@ import neto.com.mx.verificapedidocedis.mensajes.SolicitudServicio;
 import neto.com.mx.verificapedidocedis.utiles.Constantes;
 import neto.com.mx.verificapedidocedis.utiles.GlobalShare;
 import neto.com.mx.verificapedidocedis.utiles.Identidad;
-
+import neto.com.mx.verificapedidocedis.utiles.Util;
 
 //import android.app.DownloadManager;
 
@@ -101,12 +103,12 @@ public class DescargaUltimaVersionDialog_https extends Activity implements Escuc
     public void notificaEstatus(estatusProgreso estatus, String detalleError) {
         switch (estatus) {
             case ERROR:
-                cambiaVistaYTexto( VistaActualizacion.RESULTADO, "Se presentó un error durante la descarga." + detalleError);
+                cambiaVistaYTexto( VistaActualizacion.RESULTADO, "Se presentó un error durante la descarga." + detalleError + "\nID: " + Settings.Secure.getString( getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID));
                 break;
             case SUCCESS:
                 cambiaVistaYTexto( VistaActualizacion.RESULTADO, "Proceso de descarga realizado correctamente");
 
-                Log.d( GlobalShare.logAplicaion, "Iniciando proceso de instalación.");
+                Log.d(GlobalShare.logAplicaion, "Iniciando proceso de instalación.");
                 File archivo = new File(ubicacionArchivoInstalar);
 
                 if (!archivo.exists()) {
@@ -320,6 +322,7 @@ public class DescargaUltimaVersionDialog_https extends Activity implements Escuc
 
                     uCon = url.openConnection();
                     uCon.setReadTimeout(MILISEGUNDOS_TIMEOUT_DESCARGA);
+                    System.out.println( "uCon "  + uCon);
                     is = uCon.getInputStream();
                 } catch (Exception e) {
                     Log.e(GlobalShare.logAplicaion, "openConnection:", e);
@@ -390,7 +393,7 @@ public class DescargaUltimaVersionDialog_https extends Activity implements Escuc
             if (esProcesoExitoso) {
                 descarga.escuchaEstatusProgreso.notificaEstatus(estatusProgreso.SUCCESS, "");
             } else {
-                descarga.escuchaEstatusProgreso.notificaEstatus(estatusProgreso.ERROR, "Se prentó un error durante la descarga.");
+                descarga.escuchaEstatusProgreso.notificaEstatus(estatusProgreso.ERROR, "Se presentó un error durante la descarga.");
             }
 
             super.onPostExecute(aVoid);
@@ -588,9 +591,10 @@ public class DescargaUltimaVersionDialog_https extends Activity implements Escuc
         String mensajeError = null;
         //TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
 
-        String aplicacionId = getResources().getString( R.string.app_id);
+        String aplicacionId = getResources().getString(R.string.app_id);
 
-        //String imeii = identidadDispositivo; // telephonyManager.getDeviceId();
+        //String imeii = identidadDispositivo; // telephonyManager.getDeviceId(); primer Version
+
         String imeii = Settings.Secure.getString( getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID);
         String version = null;
         try {
@@ -656,16 +660,20 @@ public class DescargaUltimaVersionDialog_https extends Activity implements Escuc
         GlobalShare.getInstace().setVersionVerificado(false);
 
         cuerpoPeticion.add(new ParametroCuerpo(1, "String", imeii));//IMEII
+        //cuerpoPeticion.add(new ParametroCuerpo(1, "String", "345678654343554"));//IMEII
         cuerpoPeticion.add(new ParametroCuerpo(2, "Long", aplicacionId));//IDAPP
         cuerpoPeticion.add(new ParametroCuerpo(3, "String", versionActual));//VERSIONACTUAL
         cuerpoPeticion.add(new ParametroCuerpo(idxVersion, ":String", ""));//Version por actualizar
-        cuerpoPeticion.add(new ParametroCuerpo(idxUrlDescarga, ":String", ""));//URL Desacarga
+        cuerpoPeticion.add(new ParametroCuerpo(idxUrlDescarga, ":String", ""));//URL Descarga
         cuerpoPeticion.add(new ParametroCuerpo(idxIdError, "::Int", "0"));
         cuerpoPeticion.add(new ParametroCuerpo(idxMensaje, "::String", "0"));
 
 
-        System.out.println( "////////////////////////////////////////////////imeii " + imeii+ " aplicacionId "+ aplicacionId + " versionActual " + versionActual + " idxVersion " +idxVersion+ " idxUrlDescarga " + idxUrlDescarga+
+        System.out.println( "////////////////////////////////////////////////imeii " + imeii+ " imeii2 Hexadecimal " +  Util.HexadecilaToDecimal( imeii ) + " aplicacionId "+ aplicacionId + " versionActual " + versionActual + " idxVersion " +idxVersion+ " idxUrlDescarga " + idxUrlDescarga+
                 " idxIdError "+idxIdError+ " idxMensaje " + idxMensaje );
+
+        String macAddress = null;
+
 
         runOnUiThread(new Runnable() {
             public void run() {
@@ -720,20 +728,50 @@ public class DescargaUltimaVersionDialog_https extends Activity implements Escuc
                             GlobalShare.getInstace().setAccesoVerificado(true);
                             if (idOperacionRealizar == RespuestaCentral.NO_ES_NECESARIO_ACTUALIZAR) {//ok
                                 GlobalShare.getInstace().setVersionVerificado(true);
+                                SplashScreenActivity.bandera_bloqueaUsuario = false;
+
+                                SharedPreferences preferences = getSharedPreferences( "bloqueaUsuario",Context.MODE_PRIVATE );
+                                SharedPreferences.Editor editor = preferences.edit();
+                                editor.putBoolean( "bloquear",false );
+                                editor.commit();
+
                                 setResult(RESULT_OK);//Log.d(GlobalShare.logAplicaion, "No es necesario actualizar la versión");
                                 cambiaVistaYTexto( VistaActualizacion.RESULTADO, "No es necesario actualizar la versión.");
                                 cerrarActivity(TIME_WAIT_CLOSE_ACTIVITY_SHORT);
                                 return;
                             } else if (idOperacionRealizar == RespuestaCentral.ACTUALIZAR_VERSION_ESTABLE) {//cambiaVistaYTexto(VistaActualizacion.INICIAL, "Se requiere instalar actualización");
                                 Log.w(GlobalShare.logAplicaion, descripOpRealizar);
+                                SplashScreenActivity.bandera_bloqueaUsuario = false;
+
+                                SharedPreferences preferences = getSharedPreferences( "bloqueaUsuario",Context.MODE_PRIVATE );
+                                SharedPreferences.Editor editor = preferences.edit();
+                                editor.putBoolean( "bloquear",false );
+                                editor.commit();
+
                                 cambiaVistaYTexto( VistaActualizacion.INICIAL, getPrimerElementoPipeOTodoNoPipe(descripOpRealizar));
                             } else if (idOperacionRealizar == RespuestaCentral.ACTUALIZAR_NUEVA_VERSION) {//cambiaVistaYTexto(VistaActualizacion.INICIAL, "Se requiere hacer Downgrade...");
                                 Log.w(GlobalShare.logAplicaion, descripOpRealizar);
+                                SplashScreenActivity.bandera_bloqueaUsuario = false;
+
+                                SharedPreferences preferences = getSharedPreferences( "bloqueaUsuario",Context.MODE_PRIVATE );
+                                SharedPreferences.Editor editor = preferences.edit();
+                                editor.putBoolean( "bloquear",false );
+                                editor.commit();
+
                                 cambiaVistaYTexto( VistaActualizacion.INICIAL, getPrimerElementoPipeOTodoNoPipe(descripOpRealizar));
                             } else if (idOperacionRealizar == RespuestaCentral.ACCESO_DENEGADO_A_APP ||
                                     idOperacionRealizar == RespuestaCentral.APPLICACION_INACTIVA) {
                                 setResult(RESULT_ACCESO_DENEGADO);
                                 GlobalShare.getInstace().setAccesoVerificado(false);
+
+                                SplashScreenActivity.bandera_bloqueaUsuario = true;
+
+                                SharedPreferences preferences = getSharedPreferences( "bloqueaUsuario",Context.MODE_PRIVATE );
+                                SharedPreferences.Editor editor = preferences.edit();
+                                editor.putBoolean( "bloquear",true );
+                                editor.commit();
+
+
                                 //cambiaVistaYTexto(VistaActualizacion.INICIAL, "Acceso denegado para este dispositivo...");
                                 cambiaVistaYTexto( VistaActualizacion.RESULTADO, getPrimerElementoPipeOTodoNoPipe(descripOpRealizar));
                                 cerrarActivity(TIME_WAIT_CLOSE_ACTIVITY_LONG);
@@ -741,12 +779,26 @@ public class DescargaUltimaVersionDialog_https extends Activity implements Escuc
                             } else if (idOperacionRealizar >= RespuestaCentral.INICIO_RESPUESTAS_ERROR) {
                                 setResult(RESULT_ERROR);
                                 Log.w(GlobalShare.logAplicaion, descripOpRealizar);
+                                SplashScreenActivity.bandera_bloqueaUsuario = false;
+
+                                SharedPreferences preferences = getSharedPreferences( "bloqueaUsuario",Context.MODE_PRIVATE );
+                                SharedPreferences.Editor editor = preferences.edit();
+                                editor.putBoolean( "bloquear",false );
+                                editor.commit();
+
                                 cambiaVistaYTexto( VistaActualizacion.RESULTADO, getPrimerElementoPipeOTodoNoPipe(descripOpRealizar));
                                 cerrarActivity(TIME_WAIT_CLOSE_ACTIVITY_LONG);
                                 return;
                             } else {//Casos no contemplados pasan como [ OK ]
                                 setResult(RESULT_OK);
                                 Log.w(GlobalShare.logAplicaion, descripOpRealizar);
+                                SplashScreenActivity.bandera_bloqueaUsuario = false;
+
+                                SharedPreferences preferences = getSharedPreferences( "bloqueaUsuario",Context.MODE_PRIVATE );
+                                SharedPreferences.Editor editor = preferences.edit();
+                                editor.putBoolean( "bloquear",false );
+                                editor.commit();
+
                                 cambiaVistaYTexto( VistaActualizacion.INICIAL, getPrimerElementoPipeOTodoNoPipe(descripOpRealizar));
                                 cerrarActivity(TIME_WAIT_CLOSE_ACTIVITY_SHORT);
                                 return;
@@ -918,6 +970,8 @@ public class DescargaUltimaVersionDialog_https extends Activity implements Escuc
         //List<String> archivos = new ArrayList<>();
         //Collections.addAll(archivos, fileList());
         File archivos = getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS);
+
+        System.out.println( "archivos "+ archivos );
 
         if( archivos != null ) {
             Log.d(GlobalShare.logAplicaion, "Buscando archivo ...");

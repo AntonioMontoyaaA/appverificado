@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" group="verificadobandaresponsivo/app" />
-      <module fileurl="file://$PROJECT_DIR$/verificadobandaresponsivo.iml" filepath="$PROJECT_DIR$/verificadobandaresponsivo.iml" group="verificadobandaresponsivo" />
+      <module fileurl="file://$PROJECT_DIR$/verificadobandaresponsivo.iml" filepath="$PROJECT_DIR$/verificadobandaresponsivo.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/verificadobandaresponsivo.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/verificadobandaresponsivo.app.iml" />
     </modules>
   </component>
 </project>
