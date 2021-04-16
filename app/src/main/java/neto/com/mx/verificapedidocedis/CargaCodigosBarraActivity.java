@@ -739,7 +739,7 @@ public class CargaCodigosBarraActivity extends AppCompatActivity {
                         if (tipoPermiso == 0) {
                             indicadorProceso = "2";
                             if (obtieneArticulosIncidencia(true, 0) != "") {
-                                consultaIncidencias(true, 0, 4); //finalizarMenu opcion 4
+                                consultaIncidencias(true, 0, 3); //finalizarMenu opcion 4
                             } else {
                                 finalizaConteo();
                             }

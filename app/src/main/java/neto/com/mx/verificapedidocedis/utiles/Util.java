@@ -362,7 +362,7 @@ public class Util {
                     for (int i = 0; i < count; i++) {
                         try {
                             if (servicio.getProperty(i)!= null) {
-                                if (!servicio.getPropertyAsString(i).contains("incidencia")) {
+                                if (servicio.getPropertyAsString(i).contains("incidencia")) {
                                     SoapObject pojoSoap = null;
                                     try {
                                         pojoSoap = (SoapObject) servicio.getProperty(i);

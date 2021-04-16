@@ -13,6 +13,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.provider.Settings;
+import android.support.v4.content.FileProvider;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -54,6 +55,7 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
+import neto.com.mx.verificapedidocedis.BuildConfig;
 import neto.com.mx.verificapedidocedis.R;
 import neto.com.mx.verificapedidocedis.SplashScreenActivity;
 import neto.com.mx.verificapedidocedis.cliente.ClienteSSLConsultaGenerica;
@@ -130,10 +132,10 @@ public class DescargaUltimaVersionDialog_https extends Activity implements Escuc
                 Uri uriArchivoEncontrado = null;
                 Intent intentInstaller = null;
 
-                uriArchivoEncontrado = Uri.fromFile(archivo);
+               // uriArchivoEncontrado = Uri.fromFile(archivo);
                 intentInstaller = new Intent(Intent.ACTION_VIEW);
-                /*uriArchivoEncontrado = FileProvider.getUriForFile(
-                        getApplicationContext(), BuildConfig.APPLICATION_ID + ".provider", archivo);*/
+                uriArchivoEncontrado = FileProvider.getUriForFile(
+                        getApplicationContext(), BuildConfig.APPLICATION_ID + ".provider", archivo);
                 intentInstaller.setDataAndType(
                         uriArchivoEncontrado,
                         "application/vnd.android.package-archive");
@@ -382,7 +384,7 @@ public class DescargaUltimaVersionDialog_https extends Activity implements Escuc
         @Override
         protected void onPostExecute(Void aVoid) {
             File archivo = new File(descarga.getDirectorioDestino() + "/" + descarga.getNombreApk());
-            if (archivo != null && archivo.exists()) {
+            if ( archivo.exists()) {
                 if (bytesTotales != ByteWritten) {
                     esProcesoExitoso = false;
                     Log.i(GlobalShare.logAplicaion,
