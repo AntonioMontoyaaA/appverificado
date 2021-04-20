@@ -19,6 +19,20 @@ android {
             debuggable true
         }
     }
+    signingConfigs {
+        debug {
+            storeFile file("E:\\Users\\lvega\\Desktop\\keystores\\netoApksKeystore20212004.jks")
+            storePassword 'N3t0M3xic02021$4NDR0ID'
+            keyAlias 'realm_android_neto'
+            keyPassword 'N3T0MX$4ANDROID+'
+        }
+        release {
+            storeFile file("E:\\Users\\lvega\\Desktop\\keystores\\netoApksKeystore20212004.jks")
+            storePassword 'N3t0M3xic02021$4NDR0ID'
+            keyAlias 'realm_android_neto'
+            keyPassword 'N3T0MX$4ANDROID+'
+        }
+    }
 }
 
 dependencies {
