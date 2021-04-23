@@ -18,8 +18,10 @@ import java.util.Properties;
 import neto.com.mx.verificapedidocedis.CargaCodigosBarraActivity;
 import neto.com.mx.verificapedidocedis.ConteoDiferenciasActivity;
 import neto.com.mx.verificapedidocedis.beans.ArticuloVO;
+import neto.com.mx.verificapedidocedis.beans.CatalogoArticulosVO;
 import neto.com.mx.verificapedidocedis.beans.CodigoBarraVO;
 import neto.com.mx.verificapedidocedis.beans.CodigosGuardadosVO;
+import neto.com.mx.verificapedidocedis.beans.IncidenciaVO;
 import neto.com.mx.verificapedidocedis.beans.RespuestaIncidenciasVO;
 import neto.com.mx.verificapedidocedis.beans.UsuarioVO;
 import neto.com.mx.verificapedidocedis.beans.ValidaPedidoVO;
@@ -250,21 +252,13 @@ public class Util {
 
     /////////////////////////////////////////////GuardaDiferencias//////////////////////////////////////////////////////////////////////////////////////////////////////////////
     public RespuestaIncidenciasVO parseRespuestaGuardaDiferencias(SoapObject servicio, Context context) {
-        /*for (int i= 0;i<servicio.getPropertyCount();i ++){
-            if (servicio.getProperty(i) == null){
-                System.out.println("Servicio.getProperty: "+servicio.getProperty(i));
-                servicio.setProperty(i,true);
-                System.out.println("Servicio.getProperty Cambiado: "+servicio.getProperty(i));
-            }else {
-                System.out.println("Servicio.getProperty: " + servicio.getProperty(i));
-            }
-        }*/
+
         final String str = servicio.toString();
         System.out.println("SERVICIO/////////////////////////////////////"+str);
         Log.d(TAG, "parseRespuestaGuardaDiferencias: " + str);
         respuestaIncidencias = new RespuestaIncidenciasVO();//nueva respuesta
-        List<RespuestaIncidenciasVO.IncidenciaVO> listaTemp = new ArrayList<>(); //nueva lista temporal de tipo IncidenciaVO (subclase)
-        RespuestaIncidenciasVO.IncidenciaVO incidencia = respuestaIncidencias.new IncidenciaVO(); //nuevo objeto de tipo IncidenciaVO (subclase)
+        List<IncidenciaVO> listaTemp = new ArrayList<>(); //nueva lista temporal de tipo IncidenciaVO (subclase)
+        IncidenciaVO incidencia = new IncidenciaVO(); //nuevo objeto de tipo IncidenciaVO (subclase)
 
         int count = servicio.getPropertyCount();
 
@@ -280,7 +274,7 @@ public class Util {
                     for (int i = 0; i < count; i++) {
                         try {
                             if (servicio.getProperty(i)!= null) {
-                                if (!servicio.getPropertyAsString(i).contains("incidencia")) {
+                                if (servicio.getPropertyInfo(i).name.equals("incidencia")) {
                                     SoapObject pojoSoap = null;
                                     try {
                                         pojoSoap = (SoapObject) servicio.getProperty(i);
@@ -294,8 +288,8 @@ public class Util {
                                         SoapPrimitive cantidadDiferencia = (SoapPrimitive) pojoSoap.getProperty("cantidadDiferencia");
                                         SoapPrimitive estatusDiferencia = (SoapPrimitive) pojoSoap.getProperty("estatusDiferencia");
 
-                                        incidencia.setIncidenciaId(Long.valueOf((String) articuloId.getValue()));
-                                        incidencia.setArticuloId(Long.valueOf((String) incidenciaId.getValue()));
+                                        incidencia.setIncidenciaId(Long.valueOf((String) incidenciaId.getValue()));
+                                        incidencia.setArticuloId(Long.valueOf((String) articuloId.getValue()));
                                         incidencia.setCantidadDiferencia(Integer.valueOf((String) cantidadDiferencia.getValue()));
                                         incidencia.setEstatusDiferencia(Integer.valueOf((String) estatusDiferencia.getValue()));
                                         listaTemp.add(incidencia);
@@ -306,7 +300,7 @@ public class Util {
                             e.printStackTrace();
                         }
                     }
-                    respuestaIncidencias.setListaIncidencias(Arrays.asList(listaTemp.toArray(new RespuestaIncidenciasVO.IncidenciaVO[listaTemp.size()])));
+                    respuestaIncidencias.setListaIncidencias(Arrays.asList(listaTemp.toArray(new IncidenciaVO[listaTemp.size()])));
                     SoapPrimitive codigo = (SoapPrimitive) servicio.getProperty("errorCode");
                     SoapPrimitive mensaje = (SoapPrimitive) servicio.getProperty("errorDesc");
                     try {
@@ -332,37 +326,29 @@ public class Util {
 
     /////////////////////////////////////////////GuardaDiferencias_CargaCodigosBarra//////////////////////////////////////////////////////////////////////////////////////////////////////////////
     public RespuestaIncidenciasVO parseRespuestaGuardaDiferencias_CargaCodigosBarra(SoapObject servicio, Context context) {
-        /*for (int i= 0;i<servicio.getPropertyCount();i ++){
-            if (servicio.getProperty(i) == null){
-                System.out.println("Servicio.getProperty: "+servicio.getProperty(i));
-                servicio.setProperty(i,true);
-                System.out.println("Servicio.getProperty Cambiado: "+servicio.getProperty(i));
-            }else {
-                System.out.println("Servicio.getProperty: " + servicio.getProperty(i));
-            }
-        }*/
+
         final String str = servicio.toString();
         System.out.println("SERVICIO/////////////////////////////////////"+str);
         Log.d(TAG, "parseRespuestaGuardaDiferencias: " + str);
-        CargaCodigosBarraActivity.respuestaIncidencias = new RespuestaIncidenciasVO();//nueva respuesta
-        List<RespuestaIncidenciasVO.IncidenciaVO> listaTemp = new ArrayList<>(); //nueva lista temporal de tipo IncidenciaVO (subclase)
-        RespuestaIncidenciasVO.IncidenciaVO incidencia = CargaCodigosBarraActivity.respuestaIncidencias.new IncidenciaVO(); //nuevo objeto de tipo IncidenciaVO (subclase)
+       RespuestaIncidenciasVO respuestaIncidenciasVO = new RespuestaIncidenciasVO();//nueva respuesta
+        List<IncidenciaVO> listaIncidenciasVO = new ArrayList<>(); //nueva lista temporal de tipo IncidenciaVO
+        IncidenciaVO incidenciaVO; //nuevo objeto de tipo IncidenciaVO
 
         int count = servicio.getPropertyCount();
 
-        if (str.contains("Error") || servicio.equals(null)) {
-            SoapPrimitive coidgo = (SoapPrimitive) servicio.getProperty("errorCode");
+        if (str.contains("Error")) {
+            SoapPrimitive codigo = (SoapPrimitive) servicio.getProperty("errorCode");
             SoapPrimitive mensaje = (SoapPrimitive) servicio.getProperty("errorDesc");
-            CargaCodigosBarraActivity.respuestaIncidencias.setCodigo(Integer.valueOf((String) coidgo.getValue()));
-            CargaCodigosBarraActivity.respuestaIncidencias.setMensaje((String) mensaje.getValue());
-
+            respuestaIncidenciasVO.setCodigo(Integer.parseInt((String) codigo.getValue()));
+            respuestaIncidenciasVO.setMensaje((String) mensaje.getValue());
         } else {
             if (count > 0) {
                 try {
                     for (int i = 0; i < count; i++) {
+                        incidenciaVO = new IncidenciaVO();
                         try {
                             if (servicio.getProperty(i)!= null) {
-                                if (servicio.getPropertyAsString(i).contains("incidencia")) {
+                                if (servicio.getPropertyInfo(i).name.equals("incidencia")) {
                                     SoapObject pojoSoap = null;
                                     try {
                                         pojoSoap = (SoapObject) servicio.getProperty(i);
@@ -376,11 +362,11 @@ public class Util {
                                         SoapPrimitive cantidadDiferencia = (SoapPrimitive) pojoSoap.getProperty("cantidadDiferencia");
                                         SoapPrimitive estatusDiferencia = (SoapPrimitive) pojoSoap.getProperty("estatusDiferencia");
 
-                                        incidencia.setIncidenciaId(Long.valueOf((String) articuloId.getValue()));
-                                        incidencia.setArticuloId(Long.valueOf((String) incidenciaId.getValue()));
-                                        incidencia.setCantidadDiferencia(Integer.valueOf((String) cantidadDiferencia.getValue()));
-                                        incidencia.setEstatusDiferencia(Integer.valueOf((String) estatusDiferencia.getValue()));
-                                        listaTemp.add(incidencia);
+                                        incidenciaVO.setIncidenciaId(Long.parseLong((String) incidenciaId.getValue()));
+                                        incidenciaVO.setArticuloId(Long.parseLong((String) articuloId.getValue()));
+                                        incidenciaVO.setCantidadDiferencia(Integer.parseInt((String) cantidadDiferencia.getValue()));
+                                        incidenciaVO.setEstatusDiferencia(Integer.parseInt((String) estatusDiferencia.getValue()));
+                                        listaIncidenciasVO.add(incidenciaVO);
                                     }
                                 }
                             }
@@ -388,18 +374,18 @@ public class Util {
                             e.printStackTrace();
                         }
                     }
-                    CargaCodigosBarraActivity.respuestaIncidencias.setListaIncidencias(Arrays.asList(listaTemp.toArray(new RespuestaIncidenciasVO.IncidenciaVO[listaTemp.size()])));
+                    respuestaIncidenciasVO.setListaIncidencias(listaIncidenciasVO);
                     SoapPrimitive codigo = (SoapPrimitive) servicio.getProperty("errorCode");
                     SoapPrimitive mensaje = (SoapPrimitive) servicio.getProperty("errorDesc");
                     try {
-                        CargaCodigosBarraActivity.respuestaIncidencias.setCodigo(codigo.getValue() != null ? Integer.valueOf((String) codigo.getValue()) : 1);
+                        respuestaIncidenciasVO.setCodigo(codigo.getValue() != null ? Integer.parseInt((String) codigo.getValue()) : 1);
                     } catch (Exception e) {
-                        CargaCodigosBarraActivity.respuestaIncidencias.setCodigo(1);
+                        respuestaIncidenciasVO.setCodigo(1);
                     }
                     try {
-                        CargaCodigosBarraActivity.respuestaIncidencias.setMensaje(mensaje.getValue() != null ? (String) mensaje.getValue() : " ");
+                        respuestaIncidenciasVO.setMensaje(mensaje.getValue() != null ? (String) mensaje.getValue() : " ");
                     } catch (Exception e) {
-                        CargaCodigosBarraActivity.respuestaIncidencias.setMensaje(" ");
+                        respuestaIncidenciasVO.setMensaje(" ");
                     }
                 } catch (Exception e) {
                     ViewDialog alert = new ViewDialog(context);
@@ -408,7 +394,7 @@ public class Util {
 
             }
         }
-        return CargaCodigosBarraActivity.respuestaIncidencias;
+        return respuestaIncidenciasVO;
     }
 
 
@@ -422,10 +408,10 @@ public class Util {
         ArrayList<CodigoBarraVO> listaCodigosFaltantes;
         int count = servicio.getPropertyCount();
 
-        if (str.contains("Error") || servicio.equals(null)) {
+        if (str.contains("Error")) {
             SoapPrimitive coidgo = (SoapPrimitive) servicio.getProperty("errorCode");
             SoapPrimitive mensaje = (SoapPrimitive) servicio.getProperty("errorDesc");
-            item.setCodigo(Integer.valueOf((String) coidgo.getValue()));
+            item.setCodigo(Integer.parseInt((String) coidgo.getValue()));
             item.setMensaje((String) mensaje.getValue());
 
         } else {
@@ -515,65 +501,38 @@ public class Util {
     }
 
     /////////////////////////////////////////////GeneraCatalogoV2//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    public ArticuloVO parseRespuestaGeneraCatalogo(SoapObject servicio, Context context) {
-        CargaCodigosBarraActivity.totalCajasSurtidas = 0;
-        CargaCodigosBarraActivity.totalCajasRecibidas = 0;
-        /*for (int i= 0;i<servicio.getPropertyCount();i ++){
-            if (servicio.getProperty(i).toString().contains("DatosArticuloBean")){
-                System.out.println("Esta en Datos ArticuloBean XDxdXD/////////////////////");
-                System.out.println("Servicio.getProperty: "+servicio.getProperty(i));
-                String textoAyuda = servicio.getProperty(i).toString();
-                if (textoAyuda.contains("null")){
-                    System.out.println("tiene nullo///////////////////////////");
-                    int localizadoNull = textoAyuda.indexOf("null");
-                    String inicioTexto = textoAyuda.substring(0,localizadoNull);
-                    String finTexto = textoAyuda.substring(localizadoNull+4);
-                    textoAyuda = inicioTexto + "\"true\"" + finTexto;
-                    servicio.setProperty(i,textoAyuda);
-                }
-                System.out.println("Servicio.getProperty Cambiado: "+servicio.getProperty(i));
-            }else {
-                System.out.println("Servicio.getProperty: " + servicio.getProperty(i));
-            }
-        }*/
+    public CatalogoArticulosVO parseRespuestaGeneraCatalogo(SoapObject servicio, Context context) {
+        CatalogoArticulosVO catalogoArticulosVO = new CatalogoArticulosVO();
+
         final String str = servicio.toString();
         Log.d(TAG, "parseRespuestaGeneraCatalogo: " + str);
-        ArticuloVO item = new ArticuloVO();
-        ArrayList<ArticuloVO> articulos;
+        List<ArticuloVO> listaArticulos;
         int count = servicio.getPropertyCount();
 
 
-        if (str.contains("Error") || servicio.equals(null)) {
-            SoapPrimitive coidgo = (SoapPrimitive) servicio.getProperty("errorCode");
+        if (str.contains("Error")) {
+            SoapPrimitive codigo = (SoapPrimitive) servicio.getProperty("errorCode");
             SoapPrimitive mensaje = (SoapPrimitive) servicio.getProperty("errorDesc");
-            item.setCodigo(Integer.valueOf((String) coidgo.getValue()));
-            item.setMensaje((String) mensaje.getValue());
+            catalogoArticulosVO.setCodigo(Integer.parseInt((String) codigo.getValue()));
+            catalogoArticulosVO.setMensaje((String) mensaje.getValue());
 
         } else {
             if (count > 0) {
-                articulos = new ArrayList<>();
+                listaArticulos = new ArrayList<>();
                 try {
                     for (int i = 0; i < count; i++) {
-                        ArticuloVO items = new ArticuloVO();
+                        ArticuloVO articuloVO = new ArticuloVO();
                         try {
-                            if (!servicio.getPropertyAsString(i).contains("articulos")) {
+                            if (servicio.getPropertyInfo(i).name.equals("articulos")) {
                                 SoapObject pojoSoap = null;
                                 try {
                                     pojoSoap = (SoapObject) servicio.getProperty(i);
 
                                 } catch (Exception e) {
-                                    Log.d(TAG, "parseRespuestaValidaPedido: pojo es nulo");
+                                    Log.d(TAG, "parseRespuestaGeneraCatalogo: pojo es nulo");
 
                                 }
                                 if (pojoSoap!= null){
-                                    if (servicio.getPropertyAsString(i).contains("tipoPermiso")) {
-                                        SoapPrimitive tipoPermiso = (SoapPrimitive) pojoSoap.getProperty("tipoPermiso");
-                                        CargaCodigosBarraActivity.tipoPermiso= (Integer.valueOf((String) tipoPermiso.getValue()));
-                                        System.out.println("ValortipoPermiso/////////////////////////////"+tipoPermiso);
-                                        if (CargaCodigosBarraActivity.tipoPermiso == 1) {
-                                            CargaCodigosBarraActivity.banderaIncidencia = 1;
-                                        }
-                                    }
                                     SoapPrimitive articuloId = (SoapPrimitive) pojoSoap.getProperty("articuloId");
                                     SoapPrimitive cantidadAsignada = (SoapPrimitive) pojoSoap.getProperty("cantidadAsignada");
                                     SoapPrimitive cantidadVerificada = (SoapPrimitive) pojoSoap.getProperty("cantidadVerificada");
@@ -589,33 +548,28 @@ public class Util {
                                         String Property = String.valueOf(pojoSoap.getPropertyInfo(j));
                                         if (Property.contains("codigosBarraArr")){
                                             SoapPrimitive codigosBarraArr = (SoapPrimitive) pojoSoap.getProperty(j);
-                                            items.getCodigos().add((String) codigosBarraArr.getValue());
+                                            articuloVO.getCodigos().add((String) codigosBarraArr.getValue());
                                         }
                                         //SoapPrimitive codigosBarraArr = (SoapPrimitive) pojoSoap.getProperty("codigosBarraArr");
                                         //items.getCodigos().add((String) codigosBarraArr.getValue());
                                         //System.out.println("/////////////.codigos"+items.getCodigos()+"////////.size"+items.getCodigos().size()+"/////");
                                     }
-                                    items.setArticuloId(Long.parseLong((String)articuloId.getValue()));
-                                    items.setTotalCajasAsignadas(Integer.valueOf((String) cantidadAsignada.getValue()));
-                                    CargaCodigosBarraActivity.totalCajasSurtidas += items.getTotalCajasAsignadas();
-                                    items.setTotalCajasVerificadas(Integer.valueOf((String) cantidadVerificada.getValue()));
+                                    articuloVO.setArticuloId(Long.parseLong((String)articuloId.getValue()));
+                                    articuloVO.setTotalCajasAsignadas(Integer.parseInt((String) cantidadAsignada.getValue()));
+                                    articuloVO.setTotalCajasVerificadas(Integer.parseInt((String) cantidadVerificada.getValue()));
                                     //items.getCodigos().add((String) codigosBarraArr.getValue());
-                                    items.setNombreArticulo((String) nombre.getValue());
-                                    items.setNormaEmpaque(Integer.valueOf((String)normaEmpaque.getValue()));
-                                    items.setUnidadMedida((String) unidadMedida.getValue());
-                                    items.setUnidadMedidaId(Integer.valueOf((String) unidadMedidaId.getValue()));
-                                    items.setNormaPallet(Integer.valueOf((String) normaPallet.getValue()));
-                                    articulos.add(items);
+                                    articuloVO.setNombreArticulo((String) nombre.getValue());
+                                    articuloVO.setNormaEmpaque(Integer.parseInt((String)normaEmpaque.getValue()));
+                                    articuloVO.setUnidadMedida((String) unidadMedida.getValue());
+                                    articuloVO.setUnidadMedidaId(Integer.parseInt((String) unidadMedidaId.getValue()));
+                                    articuloVO.setNormaPallet(Integer.parseInt((String) normaPallet.getValue()));
+                                    listaArticulos.add(articuloVO);
                                     //System.out.println("////////////////////////articulos"+articulos+"/////////");
-                                    System.out.println("/////////////.codigosFINAL"+items.getCodigos()+"////////.size"+items.getCodigos().size()+"/////");
+                                    System.out.println("/////////////.codigosFINAL"+articuloVO.getCodigos()+"////////.size"+articuloVO.getCodigos().size()+"/////");
 
-                                    System.out.println("///////////////ARTICULOid" + items.getArticuloId() + "//////////////////////////////");
+                                    System.out.println("///////////////ARTICULOid" + articuloVO.getArticuloId() + "//////////////////////////////");
 
-                                    System.out.println("///////////////" + CargaCodigosBarraActivity.mapaCatalogo + "//////////////////////////////");
-                                    CargaCodigosBarraActivity.mapaCatalogo.put(items.getArticuloId(), items);
-                                    System.out.println("///////////////" + items.getArticuloId() + "//////////////////////////////");
-
-
+                                    System.out.println("///////////////" + articuloVO.getArticuloId() + "//////////////////////////////");
 
                                 }
                             }
@@ -624,21 +578,41 @@ public class Util {
                             e.printStackTrace();
                         }
                     }
-                    item.setListaArticulo(Arrays.asList(articulos.toArray(new ArticuloVO[articulos.size()])));
+                    catalogoArticulosVO.setArticuloVOList(listaArticulos);
                     SoapPrimitive codigo = (SoapPrimitive) servicio.getProperty("errorCode");
                     SoapPrimitive mensaje = (SoapPrimitive) servicio.getProperty("errorDesc");
+                    SoapPrimitive tipoPermiso = (SoapPrimitive) servicio.getProperty("tipoPermiso");
+                    SoapPrimitive permiteConteo = (SoapPrimitive) servicio.getProperty("permiteConteo");
 
                     try {
-                        item.setCodigo(codigo.getValue() != null ? Integer.valueOf((String) codigo.getValue()) : 1);
+                        catalogoArticulosVO.setTipoPermiso(tipoPermiso.getValue() != null ? Integer.parseInt((String) tipoPermiso.getValue()) : 1);
+                        System.out.println("tipoPermiso "+catalogoArticulosVO.getTipoPermiso());
+                        if (catalogoArticulosVO.getTipoPermiso() == 1) {
+                            catalogoArticulosVO.setBanderaIncidencia(1);
+                        }
+                    } catch (Exception e) {
+                        catalogoArticulosVO.setTipoPermiso(1);
+                        catalogoArticulosVO.setBanderaIncidencia(1);
+                    }
+
+                    try {
+                        catalogoArticulosVO.setPermiteConteo(permiteConteo.getValue() != null ? Integer.parseInt((String) permiteConteo.getValue()) : 1);
+                        System.out.println("permiteConteo "+catalogoArticulosVO.getPermiteConteo());
+                    } catch (Exception e) {
+                        catalogoArticulosVO.setPermiteConteo(0);
+                    }
+
+                    try {
+                        catalogoArticulosVO.setCodigo(codigo.getValue() != null ? Integer.parseInt((String) codigo.getValue()) : 1);
                         System.out.println("codigo ");
                     } catch (Exception e) {
-                        item.setCodigo(1);
+                        catalogoArticulosVO.setCodigo(1);
                     }
                     try {
-                        item.setMensaje(mensaje.getValue() != null ? (String) mensaje.getValue() : " ");
+                        catalogoArticulosVO.setMensaje(mensaje.getValue() != null ? (String) mensaje.getValue() : " ");
                         System.out.println("mensaje ");
                     } catch (Exception e) {
-                        item.setMensaje(" ");
+                        catalogoArticulosVO.setMensaje(" ");
                     }
                     CargaCodigosBarraActivity.existeCodigo = false;
                     long articuloID = 0;
@@ -650,6 +624,6 @@ public class Util {
                 }
             }
         }
-        return item;
+        return catalogoArticulosVO;
     }
 }

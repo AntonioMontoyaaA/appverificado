@@ -96,6 +96,10 @@ public class CargaFolioPedidoActivity extends AppCompatActivity {
 
     }
 
+    public void pedidoPruebaTogo(View view){
+        editTextFolio.setText("202009211813803");
+        ejecutaWS();
+    }
     public void regresarMenuFront(View view) {
         Vibrator vibe = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         vibe.vibrate(100);

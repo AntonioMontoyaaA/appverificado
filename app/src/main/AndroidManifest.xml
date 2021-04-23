@@ -95,9 +95,10 @@
                 <!--<data android:scheme="content" />-->
             </intent-filter>
         </activity>
-        <activity android:name=".CargaZonasDisponiblesActivity"
+        <activity
+            android:name=".CargaZonasDisponiblesActivity"
             android:screenOrientation="portrait"
-            tools:ignore="Instantiatable,LockedOrientationActivity"></activity>
+            tools:ignore="Instantiatable,LockedOrientationActivity" />
         <provider
             android:name="android.support.v4.content.FileProvider"
             android:authorities="${applicationId}.provider"

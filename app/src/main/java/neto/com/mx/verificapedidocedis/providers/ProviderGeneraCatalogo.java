@@ -11,9 +11,11 @@ import org.ksoap2.serialization.SoapObject;
 import org.ksoap2.serialization.SoapSerializationEnvelope;
 import org.ksoap2.transport.HttpTransportSE;
 
+import java.util.List;
 import java.util.Map;
 
 import neto.com.mx.verificapedidocedis.beans.ArticuloVO;
+import neto.com.mx.verificapedidocedis.beans.CatalogoArticulosVO;
 import neto.com.mx.verificapedidocedis.utiles.Constantes;
 import neto.com.mx.verificapedidocedis.utiles.Util;
 
@@ -36,11 +38,11 @@ public class ProviderGeneraCatalogo {
     public void getGeneraCatalogo(final SoapObject request, final interfaceGeneraCatalogo promise ) {
 
 
-        (new AsyncTask<Void, Void, ArticuloVO>() {
-            ArticuloVO respuestaGeneraCatalogo = null;
+        (new AsyncTask<Void, Void, CatalogoArticulosVO>() {
+            CatalogoArticulosVO respuestaGeneraCatalogo = null;
 
             @Override
-            protected ArticuloVO doInBackground(Void... voids) {
+            protected CatalogoArticulosVO doInBackground(Void... voids) {
                 try {
                     SoapSerializationEnvelope sse = new SoapSerializationEnvelope(SoapEnvelope.VER11);
                     sse.dotNet = true;
@@ -64,14 +66,14 @@ public class ProviderGeneraCatalogo {
 
 
             @Override
-            protected void onPostExecute(ArticuloVO respuestaGeneraCatalogo) {
+            protected void onPostExecute(CatalogoArticulosVO respuestaGeneraCatalogo) {
                 promise.resolver(respuestaGeneraCatalogo);
             }
         }).execute();
     }
 
     public interface interfaceGeneraCatalogo {
-        void resolver(ArticuloVO respuestaGeneraCatalogo);
+        void resolver(CatalogoArticulosVO respuestaGeneraCatalogo);
 
         Map<String, String> getHeaders() throws AuthFailureError;
     }

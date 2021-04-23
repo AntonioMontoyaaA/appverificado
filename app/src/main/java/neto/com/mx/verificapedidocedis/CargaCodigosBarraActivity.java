@@ -44,8 +44,10 @@ import java.util.List;
 import java.util.Map;
 
 import neto.com.mx.verificapedidocedis.beans.ArticuloVO;
+import neto.com.mx.verificapedidocedis.beans.CatalogoArticulosVO;
 import neto.com.mx.verificapedidocedis.beans.CodigoBarraVO;
 import neto.com.mx.verificapedidocedis.beans.CodigosGuardadosVO;
+import neto.com.mx.verificapedidocedis.beans.IncidenciaVO;
 import neto.com.mx.verificapedidocedis.beans.RespuestaIncidenciasVO;
 import neto.com.mx.verificapedidocedis.dialogos.PantallaInicioDialogo;
 import neto.com.mx.verificapedidocedis.dialogos.ViewDialog;
@@ -83,13 +85,13 @@ public class CargaCodigosBarraActivity extends AppCompatActivity {
     private int ACCION_GUARDA = 0;
     private boolean esGuardadoPorCodigos = false;
     public static int banderaIncidencia;
-    public static int tipoPermiso;
+    public static int tipoPermiso = 1;
     long incidencia = 0;
     int estatusIncidencia = 0;
     int pallet = 0;
     String indicadorProceso = "1";
     String codigoActual = "";
-    public static RespuestaIncidenciasVO respuestaIncidencias;
+    private RespuestaIncidenciasVO respuestaIncidencias;
     String metodo = "";
     boolean bloqueo_finalizado = false; //para asegurar que solo se guarde una vez por peticion
 
@@ -141,9 +143,9 @@ public class CargaCodigosBarraActivity extends AppCompatActivity {
         }
 
         editTextCodigos = (EditText) findViewById(R.id.codigoBarraText);
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M){
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
             editTextCodigos.setCursorVisible(false);
-        }else{
+        } else {
             editTextCodigos.setInputType(InputType.TYPE_NULL);
         }
         editTextCodigos.requestFocus();
@@ -182,26 +184,32 @@ public class CargaCodigosBarraActivity extends AppCompatActivity {
 
                 //String url = Constantes.URL_STRING + "getCatalogoArticulosVerificadorGeneral";
 
-                SoapObject request = new SoapObject(NAMESPACE,METHOD_NAME_GETCATALOGOARTICULOSVERIFICADORGENERAL);
+                SoapObject request = new SoapObject(NAMESPACE, METHOD_NAME_GETCATALOGOARTICULOSVERIFICADORGENERAL);
 
                 request.addProperty("folio", folio);
                 request.addProperty("numeroSerie", Build.SERIAL);
                 request.addProperty("version", version);
                 request.addProperty("usuario", numeroEmpleado);
 
-                System.out.println("///////////////////////////REQUEST DescargaCatalogosArticulos"+request);
+                System.out.println("///////////////////////////REQUEST DescargaCatalogosArticulos" + request);
 
                 ProviderGeneraCatalogo.getInstance(this).getGeneraCatalogo(request, new ProviderGeneraCatalogo.interfaceGeneraCatalogo() {
                     @Override
-                    public void resolver(ArticuloVO respuestaGeneraCatalogo) {
+                    public void resolver(CatalogoArticulosVO respuestaGeneraCatalogo) {
 
                         mDialog.dismiss();
                         System.out.println("*** 1 *** RESPONSE_CargaCodigosBarraActivity-GeneraCatalogo://////////////////////////////////" + respuestaGeneraCatalogo);
                         if (respuestaGeneraCatalogo != null) {
-                            cuentaCajasRecibidas();
+                            totalCajasRecibidas = respuestaGeneraCatalogo.getTotalCajasVerificadas();
+                            totalCajasSurtidas = respuestaGeneraCatalogo.getTotalCajasSurtidas();
+                            mapaCatalogo = respuestaGeneraCatalogo.toHashMap();
+                            tipoPermiso = respuestaGeneraCatalogo.getTipoPermiso();
+                            banderaIncidencia = respuestaGeneraCatalogo.getBanderaIncidencia();
+                            System.out.println("Codigo Respuesta: " + respuestaGeneraCatalogo.getCodigo() + " mensaje:" + respuestaGeneraCatalogo.getMensaje());
+                            //cuentaCajasRecibidas();
                             PantallaInicioDialogo pantallaInicioDialogo = new PantallaInicioDialogo(CargaCodigosBarraActivity.this);
                             pantallaInicioDialogo.showDialog(CargaCodigosBarraActivity.this, new String(nombreTienda), new String(folio), totalCajasSurtidas - totalCajasRecibidas);
-                        }else {
+                        } else {
                             mDialog.dismiss();
                             System.out.println("*** 2 ***");
                             //cuando el tiempo del servicio exedio el timeout
@@ -378,7 +386,7 @@ public class CargaCodigosBarraActivity extends AppCompatActivity {
                     editTextCodigos.setText("");
                     editTextCodigos.getText().clear();
 
-                    if(!codigoBarras.equals("")) {
+                    if (!codigoBarras.equals("")) {
                         if (codigoBarras.contains("\n")) {
                             String[] codigoBarras1 = codigoBarras.split("\n");
                             Log.d(TAG, "onEditorAction: " + codigoBarras1.length);
@@ -392,7 +400,7 @@ public class CargaCodigosBarraActivity extends AppCompatActivity {
 
                         long nuevoArticulo = existencia(codigoBarras);
 
-                        if (codigoActual == "") {
+                        if (codigoActual.equals("")) {
                             System.out.println("***** PRIMER CODIGO");
                             if (tipoPermiso == 0) {
                                 codigoActual = codigoBarras;
@@ -418,7 +426,7 @@ public class CargaCodigosBarraActivity extends AppCompatActivity {
                                                 @Override
                                                 public void onVerde() {
                                                     indicadorProceso = "2";
-                                                    if (obtieneArticulosIncidencia(false, articuloId) != "") {
+                                                    if (!obtieneArticulosIncidencia(false, articuloId).equals("")) {
                                                         consultaIncidencias(false, articuloId, 2); //opcion2
                                                     }
                                                 }
@@ -631,13 +639,13 @@ public class CargaCodigosBarraActivity extends AppCompatActivity {
                     System.out.println("pallet3/////////////////////////////////////////////////////" + pallet);
                     System.out.println("canidadEmbarcadaDialogo3/////////////////////////////////////////////////////" + cantidadEmbarcadaDialogo);*/
                 }
-            } else if (cantidadCapturadaDialogo < pallet){
+            } else if (cantidadCapturadaDialogo < pallet) {
                 num = num + ((num % nearest - nearest) * -1);
                 cantidadCapturadaDialogo = num;
                 /*System.out.println("cantidadCapturadaDialogo4/////////////////////////////////////////////////////" + cantidadCapturadaDialogo);
                 System.out.println("pallet4/////////////////////////////////////////////////////" + pallet);
                 System.out.println("canidadEmbarcadaDialogo4/////////////////////////////////////////////////////" + cantidadEmbarcadaDialogo);*/
-            }else {
+            } else {
                 // NO HACER NADAA
                 System.out.println("Dentro de error por mayor a pallet");
                 editTextCodigos.getText().clear();
@@ -723,7 +731,7 @@ public class CargaCodigosBarraActivity extends AppCompatActivity {
         cuentaCajasRecibidas();
         Vibrator vibe = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         vibe.vibrate(100);
-        if (totalCajasRecibidas < totalCajasSurtidas && obtieneArticulosIncidencia(true, 0) != "") {
+        if (totalCajasRecibidas < totalCajasSurtidas && !obtieneArticulosIncidencia(true, 0).equals("")) {
             final ViewDialogoGenerico dialogoFin = new ViewDialogoGenerico(CargaCodigosBarraActivity.this);
             dialogoFin.showDialog(CargaCodigosBarraActivity.this,
                     "Faltan artículos por escanear. ¿Desea finalizar el pedido y generar una incidencia de faltante?",
@@ -738,8 +746,8 @@ public class CargaCodigosBarraActivity extends AppCompatActivity {
                     if (totalCajasRecibidas < totalCajasSurtidas) {
                         if (tipoPermiso == 0) {
                             indicadorProceso = "2";
-                            if (obtieneArticulosIncidencia(true, 0) != "") {
-                                consultaIncidencias(true, 0, 3); //finalizarMenu opcion 4
+                            if (!obtieneArticulosIncidencia(true, 0).equals("")) {
+                                consultaIncidencias(true, 0, 4); //finalizarMenu opcion 4
                             } else {
                                 finalizaConteo();
                             }
@@ -967,7 +975,7 @@ public class CargaCodigosBarraActivity extends AppCompatActivity {
                     //String url = Constantes.URL_STRING + "guardarArtsContadosVerificador";
                     int contadorOcurrencias = 0;
 
-                    SoapObject request = new SoapObject(NAMESPACE,METHOD_NAME_GUARDARARTSCONTADOSVERIFICADOR);
+                    SoapObject request = new SoapObject(NAMESPACE, METHOD_NAME_GUARDARARTSCONTADOSVERIFICADOR);
 
                     request.addProperty("folio", folio);
                     request.addProperty("idZona", String.valueOf(idZona));
@@ -978,7 +986,7 @@ public class CargaCodigosBarraActivity extends AppCompatActivity {
                     request.addProperty("version", version);
                     request.addProperty("usuario", numeroEmpleado);
                     request.addProperty("metodo", metodo);
-                    System.out.println("///////////////////////////REQUEST_EJECUTAWSHILO_CargaCodigosBarraActivity"+request);
+                    System.out.println("///////////////////////////REQUEST_EJECUTAWSHILO_CargaCodigosBarraActivity" + request);
 
                     ProviderGuardarArticulos.getInstance(this).getGuardarArticulos(request, new ProviderGuardarArticulos.interfaceGuardarArticulos() {
                         @Override
@@ -988,63 +996,14 @@ public class CargaCodigosBarraActivity extends AppCompatActivity {
                                 System.out.println("*** GUARDADO 2 - hilo *** response: " + respuestaGuardaArticulos);
 //                                System.out.println("*** Pedido = " + folio);
                                 bloqueo_finalizado = false;
-                            }else {
+                            } else {
                                 System.out.println("*** 2 ***");
                                 //cuando el tiempo del servicio exedio el timeout
                                 ViewDialog alert = new ViewDialog(CargaCodigosBarraActivity.this);
                                 alert.showDialog(CargaCodigosBarraActivity.this, "Error al consumir el servicio que guarda los códigos", null, TiposAlert.ERROR);
                             }
-
                         }
                     });
-
-
-
-
-
-
-                    /*StringRequest strRequest = null;
-
-
-                    strRequest = new StringRequest(Request.Method.POST, url,
-                            new Response.Listener<String>() {
-                                @Override
-                                public void onResponse(String response) {
-                                    System.out.println("*** GUARDADO 2 - hilo *** response: " + response);
-//                                System.out.println("*** Pedido = " + folio);
-                                    bloqueo_finalizado = false;
-                                }
-                            },
-                            new Response.ErrorListener() {
-                                @Override
-                                public void onErrorResponse(VolleyError error) {
-                                    bloqueo_finalizado = false;
-//                                System.out.println("*** Error al guardar los códigos *** response: " + error.getMessage());
-                                }
-                            }) {
-                        @Override
-                        protected Map<String, String> getParams() {
-                            Map<String, String> params = new HashMap<String, String>();
-
-                            params.put("folio", folio);
-                            params.put("idZona", String.valueOf(idZona));
-                            params.put("articulosArray", obtieneCadenaArticulos());
-                            params.put("cantidadesArray", obtieneCadenaCajas());
-                            params.put("tipoGuardado", String.valueOf(ACCION_GUARDA));
-                            params.put("numeroSerie", Build.SERIAL);
-                            params.put("version", version);
-                            params.put("usuario", numeroEmpleado);
-                            params.put("metodo", metodo);
-                            return params;
-                        }
-                    };
-
-                    strRequest.setRetryPolicy(new DefaultRetryPolicy(
-                            50000,
-                            0,
-                            DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-                    AppController.getInstance().addToRequestQueue(strRequest, "tag");*/
-
 
                 } catch (Exception me) {
                     bloqueo_finalizado = false;
@@ -1182,7 +1141,7 @@ public class CargaCodigosBarraActivity extends AppCompatActivity {
     }
 
     public String obtieneArticulosIncidencia(boolean xTodos, long articuloId) {
-        StringBuffer cadena = new StringBuffer();
+        StringBuilder cadena = new StringBuilder();
         System.out.println("obtieneArticulosIncidencia**");
 
         if (!xTodos && articuloId == 0) {
@@ -1196,12 +1155,18 @@ public class CargaCodigosBarraActivity extends AppCompatActivity {
                         boolean encontrado = false;
 
                         if (respuestaIncidencias != null) {
-                            for (RespuestaIncidenciasVO.IncidenciaVO lista : respuestaIncidencias.getListaIncidencias()) {
+                            for (IncidenciaVO lista : respuestaIncidencias.getListaIncidencias()) {
                                 if (lista.getArticuloId() == entry.getKey()) {
                                     if (lista.getEstatusDiferencia() == 1) {
                                         System.out.println("impresion omite " + entry.getKey());
                                         encontrado = true;
+                                    } else {
+                                        System.out.println("Aun Hay incidencias con el articulo" + entry.getKey());
+                                        encontrado = false;
+                                        break;
                                     }
+
+
                                 }
                             }
                         }
@@ -1209,7 +1174,7 @@ public class CargaCodigosBarraActivity extends AppCompatActivity {
                             cadena.append(entry.getKey());
                             cadena.append("|");
                         }
-                    } else if (!xTodos && articuloId != 0) {
+                    } else {
                         if (entry.getKey() == articuloId) {
                             cadena.append(entry.getKey());
                             cadena.append("|");
@@ -1241,10 +1206,13 @@ public class CargaCodigosBarraActivity extends AppCompatActivity {
                     if (xTodos) {
                         boolean encontrado = false;
                         if (respuestaIncidencias != null) {
-                            for (RespuestaIncidenciasVO.IncidenciaVO lista : respuestaIncidencias.getListaIncidencias()) {
+                            for (IncidenciaVO lista : respuestaIncidencias.getListaIncidencias()) {
                                 if (lista.getArticuloId() == entry.getKey()) {
                                     if (lista.getEstatusDiferencia() == 1) {
                                         encontrado = true;
+                                    } else {
+                                        System.out.println("Aun Hay incidencias con el articulo" + entry.getKey());
+                                        encontrado = false;
                                     }
                                 }
                             }
@@ -1254,14 +1222,11 @@ public class CargaCodigosBarraActivity extends AppCompatActivity {
                             cadena.append("|");
                         }
                     }
-                    if (!xTodos && articuloId != 0) {
+                    if (!xTodos) {
                         if (entry.getKey() == articuloId) {
                             cadena.append(cantidadEmbarcadaDialogo - cantidadCapturadaDialogo);
                             cadena.append("|");
                         }
-                    }
-                    if (!xTodos && articuloId == 0) {
-                        cadena.append("");
                     }
                 }
             }
@@ -1286,7 +1251,7 @@ public class CargaCodigosBarraActivity extends AppCompatActivity {
         if (networkInfo != null && networkInfo.isConnected()) {
             try {
                 //String url = Constantes.URL_STRING + "guardarDiferenciasVerificado";
-                SoapObject request = new SoapObject(NAMESPACE,METHOD_NAME_GUARDARDIFERENCIASVERIFICADO);
+                SoapObject request = new SoapObject(NAMESPACE, METHOD_NAME_GUARDARDIFERENCIASVERIFICADO);
 
 
                 request.addProperty("folio", folio);
@@ -1300,7 +1265,7 @@ public class CargaCodigosBarraActivity extends AppCompatActivity {
                 request.addProperty("cantidadesArray", obtieneCajasIncidencia(xTodos, articuloId));
 
 
-                System.out.println("/////////////////////////////REQUEST_consultaIncidencias_CargaCodigosBarraActivity:"+request);
+                System.out.println("/////////////////////////////REQUEST_consultaIncidencias_CargaCodigosBarraActivity:" + request);
 
                 ProviderGuardarDiferencias_CargaCodigosBarra.getInstance(this).getGuardarDiferencias_CargaCodigosBarra(request, new ProviderGuardarDiferencias_CargaCodigosBarra.interfaceGuardarDiferencias_CargaCodigosBarra() {
                     @Override
@@ -1310,15 +1275,17 @@ public class CargaCodigosBarraActivity extends AppCompatActivity {
                         mDialog.dismiss();
 
                         if (respuestaGuardaDiferencias_CargaCodigosBarra != null) {
+
+                            respuestaIncidencias = respuestaGuardaDiferencias_CargaCodigosBarra;
                             // ----------------------------------
                             if (opcion == 1) {
                                 Log.d(TAG, "onResponse: " + "respuesta opcion1");
 
-                                if (respuestaIncidencias.getCodigo() == 0) {
+                                if (respuestaGuardaDiferencias_CargaCodigosBarra.getCodigo() == 0) {
                                     incidencia = 0;
                                     estatusIncidencia = 1;
                                     banderaIncidencia = 0;
-                                    for (RespuestaIncidenciasVO.IncidenciaVO inc : respuestaIncidencias.getListaIncidencias()) {
+                                    for (IncidenciaVO inc : respuestaGuardaDiferencias_CargaCodigosBarra.getListaIncidencias()) {
                                         incidencia = 1;
                                         if (inc.getEstatusDiferencia() == 0) {
                                             estatusIncidencia = 0;
@@ -1336,7 +1303,7 @@ public class CargaCodigosBarraActivity extends AppCompatActivity {
                             }
                             // ----------------------------------
                             else if (opcion == 2) {
-                                if (respuestaIncidencias.getCodigo() == 0) {
+                                if (respuestaGuardaDiferencias_CargaCodigosBarra.getCodigo() == 0) {
                                     Toast toast1 = Toast.makeText(getApplicationContext(),
                                             "Incidencias generadas con éxito", Toast.LENGTH_SHORT);
                                     toast1.show();
@@ -1347,11 +1314,11 @@ public class CargaCodigosBarraActivity extends AppCompatActivity {
                             }
                             // ----------------------------------
                             else if (opcion == 3) {
-                                if (respuestaIncidencias.getCodigo() == 0) {
+                                if (respuestaGuardaDiferencias_CargaCodigosBarra.getCodigo() == 0) {
                                     incidencia = 0;
                                     estatusIncidencia = 1;
                                     banderaIncidencia = 0;
-                                    for (RespuestaIncidenciasVO.IncidenciaVO inc : respuestaIncidencias.getListaIncidencias()) {
+                                    for (IncidenciaVO inc : respuestaGuardaDiferencias_CargaCodigosBarra.getListaIncidencias()) {
                                         if (inc.getArticuloId() == articuloId) {
                                             incidencia = 1;
                                             if (inc.getEstatusDiferencia() == 0) {
@@ -1368,7 +1335,7 @@ public class CargaCodigosBarraActivity extends AppCompatActivity {
                                             @Override
                                             public void onVerde() {
                                                 indicadorProceso = "2";
-                                                if (obtieneArticulosIncidencia(false, articuloId) != "") {
+                                                if (!obtieneArticulosIncidencia(false, articuloId).equals("")) {
                                                     consultaIncidencias(false, articuloId, 7);
                                                 }
                                             }
@@ -1396,7 +1363,7 @@ public class CargaCodigosBarraActivity extends AppCompatActivity {
                             }
                             // ----------------------------------
                             else if (opcion == 4) {
-                                if (respuestaIncidencias.getCodigo() == 0) {
+                                if (respuestaGuardaDiferencias_CargaCodigosBarra.getCodigo() == 0) {
                                     Toast toast1 = Toast.makeText(getApplicationContext(),
                                             "Incidencias generadas con éxito", Toast.LENGTH_SHORT);
                                     toast1.show();
@@ -1405,10 +1372,10 @@ public class CargaCodigosBarraActivity extends AppCompatActivity {
                             }
                             // ----------------------------------
                             else if (opcion == 5) {
-                                if (respuestaIncidencias.getCodigo() == 0) {
+                                if (respuestaGuardaDiferencias_CargaCodigosBarra.getCodigo() == 0) {
                                     incidencia = 0;
                                     estatusIncidencia = 1;
-                                    for (RespuestaIncidenciasVO.IncidenciaVO inc : respuestaIncidencias.getListaIncidencias()) {
+                                    for (IncidenciaVO inc : respuestaGuardaDiferencias_CargaCodigosBarra.getListaIncidencias()) {
                                         incidencia = 1;
                                         if (inc.getEstatusDiferencia() == 0) {
                                             estatusIncidencia = 0;
@@ -1421,7 +1388,7 @@ public class CargaCodigosBarraActivity extends AppCompatActivity {
                                             alert.showDialog(CargaCodigosBarraActivity.this, "Existen incidencias sin autorizar, comunícate con el encargado de almacén para continuar", null, TiposAlert.ERROR);
                                         } else {
                                             indicadorProceso = "2";
-                                            if (obtieneArticulosIncidencia(true, 0) != "") {//finalizar-obtieneIncidencias
+                                            if (!obtieneArticulosIncidencia(true, 0).equals("")) {//finalizar-obtieneIncidencias
                                                 consultaIncidencias(true, 0, 6);//genera Incidenacias - finalizado - opcion 6
                                             } else {
                                                 finalizaConteo();
@@ -1429,7 +1396,7 @@ public class CargaCodigosBarraActivity extends AppCompatActivity {
                                         }
                                     } else {
                                         indicadorProceso = "2";
-                                        if (obtieneArticulosIncidencia(true, 0) != "") {
+                                        if (!obtieneArticulosIncidencia(true, 0).equals("")) {
                                             consultaIncidencias(true, 0, 6);
                                         } else {
                                             finalizaConteo();
@@ -1438,7 +1405,7 @@ public class CargaCodigosBarraActivity extends AppCompatActivity {
                                 }
                             } else if (opcion == 6) {
 
-                                if (respuestaIncidencias.getCodigo() == 0) {
+                                if (respuestaGuardaDiferencias_CargaCodigosBarra.getCodigo() == 0) {
                                     banderaIncidencia = 1;
                                     Toast toast1 = Toast.makeText(getApplicationContext(),
                                             "Incidencias generadas con éxito", Toast.LENGTH_SHORT);
@@ -1448,7 +1415,7 @@ public class CargaCodigosBarraActivity extends AppCompatActivity {
                                     alert.showDialog(CargaCodigosBarraActivity.this, "Solicita la autorización de la incidencia al encargado de almacén para continuar", null, TiposAlert.ERROR);
                                 }
                             } else if (opcion == 7) {
-                                if (respuestaIncidencias.getCodigo() == 0) {
+                                if (respuestaGuardaDiferencias_CargaCodigosBarra.getCodigo() == 0) {
                                     banderaIncidencia = 1;
                                     Toast toast1 = Toast.makeText(getApplicationContext(),
                                             "Incidencias generadas con éxito", Toast.LENGTH_SHORT);
@@ -1461,7 +1428,7 @@ public class CargaCodigosBarraActivity extends AppCompatActivity {
                             }
                             // ----------------------------------
 
-                            if (respuestaIncidencias.getCodigo() != 0) {
+                            if (respuestaGuardaDiferencias_CargaCodigosBarra.getCodigo() != 0) {
                                 if (indicadorProceso == "1") {
                                     ViewDialog alert = new ViewDialog(CargaCodigosBarraActivity.this);
                                     alert.showDialog(CargaCodigosBarraActivity.this, "Ocurrió un error al consultar incidencias", null, TiposAlert.ERROR);
@@ -1471,7 +1438,7 @@ public class CargaCodigosBarraActivity extends AppCompatActivity {
                                     alert.showDialog(CargaCodigosBarraActivity.this, "Ocurrió un error al generar incidencias", null, TiposAlert.ERROR);
                                 }
                             }
-                        }else {
+                        } else {
                             System.out.println("*** 2 ***");
                             //cuando el tiempo del servicio exedio el timeout
                             ViewDialog alert = new ViewDialog(CargaCodigosBarraActivity.this);
@@ -1481,218 +1448,6 @@ public class CargaCodigosBarraActivity extends AppCompatActivity {
                 });
 
 
-
-
-
-
-
-
-
-
-                /*StringRequest strRequest = new StringRequest(Request.Method.POST, url,
-                        new Response.Listener<String>() {
-                            @Override
-                            public void onResponse(String response) {
-                                System.out.println("****** INCIDENCIAS RESPONSE" + response);
-
-                                generaListaIncidencias(response);
-                                mDialog.dismiss();
-                                // ----------------------------------
-                                if (opcion == 1) {
-                                    Log.d(TAG, "onResponse: " + "respuesta opcion1");
-
-                                    if (respuestaIncidencias.getCodigo() == 0) {
-                                        incidencia = 0;
-                                        estatusIncidencia = 1;
-                                        banderaIncidencia = 0;
-                                        for (RespuestaIncidenciasVO.IncidenciaVO inc : respuestaIncidencias.getListaIncidencias()) {
-                                            incidencia = 1;
-                                            if (inc.getEstatusDiferencia() == 0) {
-                                                estatusIncidencia = 0;
-                                                banderaIncidencia = 1;
-                                            }
-                                        }
-                                        if (estatusIncidencia == 0) {
-                                            ViewDialog alert = new ViewDialog(CargaCodigosBarraActivity.this);
-                                            alert.showDialog(CargaCodigosBarraActivity.this, "Existen incidencias sin autorizar, comunícate con el encargado de almacén para continuar", null, TiposAlert.ERROR);
-                                        } else {
-                                            codigoActual = codigoBarras;
-                                            actualizaValores(true);
-                                        }
-                                    }
-                                }
-                                // ----------------------------------
-                                else if (opcion == 2) {
-                                    if (respuestaIncidencias.getCodigo() == 0) {
-                                        Toast toast1 = Toast.makeText(getApplicationContext(),
-                                                "Incidencias generadas con éxito", Toast.LENGTH_SHORT);
-                                        toast1.show();
-                                        actualizaValores(true);
-                                    } else {
-                                        codigoBarras = codigoActual;
-                                    }
-                                }
-                                // ----------------------------------
-                                else if (opcion == 3) {
-                                    if (respuestaIncidencias.getCodigo() == 0) {
-                                        incidencia = 0;
-                                        estatusIncidencia = 1;
-                                        banderaIncidencia = 0;
-                                        for (RespuestaIncidenciasVO.IncidenciaVO inc : respuestaIncidencias.getListaIncidencias()) {
-                                            if (inc.getArticuloId() == articuloId) {
-                                                incidencia = 1;
-                                                if (inc.getEstatusDiferencia() == 0) {
-                                                    estatusIncidencia = 0;
-                                                    banderaIncidencia = 1;
-                                                }
-                                            }
-                                        }
-
-                                        if (incidencia == 0) {
-                                            final ViewDialogoGenerico dialogo = new ViewDialogoGenerico(CargaCodigosBarraActivity.this);
-                                            dialogo.showDialog(CargaCodigosBarraActivity.this, "Faltan cajas por verificar del artículo " + descripcionCodigoBarras + ". ¿Desea generar una incidencia de faltante?", "Aceptar", "Regresar", "", true);
-                                            dialogo.setViewDialogoGenericoListener(new ViewDialogoGenerico.ViewDialogoGenericoListener() {
-                                                @Override
-                                                public void onVerde() {
-                                                    indicadorProceso = "2";
-                                                    if (obtieneArticulosIncidencia(false, articuloId) != "") {
-                                                        consultaIncidencias(false, articuloId, 7);
-                                                    }
-                                                }
-
-                                                @Override
-                                                public void onRojo() {
-                                                    codigoBarras = codigoActual;
-                                                }
-
-                                                @Override
-                                                public void onExtra() {
-
-                                                }
-                                            });
-                                        } else {
-                                            if (estatusIncidencia == 0) {
-                                                ViewDialog alert = new ViewDialog(CargaCodigosBarraActivity.this);
-                                                alert.showDialog(CargaCodigosBarraActivity.this, "Solicita la autorización de la incidencia al encargado de almacén para continuar", null, TiposAlert.ERROR);
-                                            } else {
-                                                codigoActual = codigoBarras;
-                                                actualizaValores(true);
-                                            }
-                                        }
-                                    }
-                                }
-                                // ----------------------------------
-                                else if (opcion == 4) {
-                                    if (respuestaIncidencias.getCodigo() == 0) {
-                                        Toast toast1 = Toast.makeText(getApplicationContext(),
-                                                "Incidencias generadas con éxito", Toast.LENGTH_SHORT);
-                                        toast1.show();
-                                        finalizaConteo();
-                                    }
-                                }
-                                // ----------------------------------
-                                else if (opcion == 5) {
-                                    if (respuestaIncidencias.getCodigo() == 0) {
-                                        incidencia = 0;
-                                        estatusIncidencia = 1;
-                                        for (RespuestaIncidenciasVO.IncidenciaVO inc : respuestaIncidencias.getListaIncidencias()) {
-                                            incidencia = 1;
-                                            if (inc.getEstatusDiferencia() == 0) {
-                                                estatusIncidencia = 0;
-                                            }
-                                        }
-
-                                        if (incidencia == 1) {
-                                            if (estatusIncidencia == 0) {
-                                                ViewDialog alert = new ViewDialog(CargaCodigosBarraActivity.this);
-                                                alert.showDialog(CargaCodigosBarraActivity.this, "Existen incidencias sin autorizar, comunícate con el encargado de almacén para continuar", null, TiposAlert.ERROR);
-                                            } else {
-                                                indicadorProceso = "2";
-                                                if (obtieneArticulosIncidencia(true, 0) != "") {//finalizar-obtieneIncidencias
-                                                    consultaIncidencias(true, 0, 6);//genera Incidenacias - finalizado - opcion 6
-                                                } else {
-                                                    finalizaConteo();
-                                                }
-                                            }
-                                        } else {
-                                            indicadorProceso = "2";
-                                            if (obtieneArticulosIncidencia(true, 0) != "") {
-                                                consultaIncidencias(true, 0, 6);
-                                            } else {
-                                                finalizaConteo();
-                                            }
-                                        }
-                                    }
-                                } else if (opcion == 6) {
-
-                                    if (respuestaIncidencias.getCodigo() == 0) {
-                                        banderaIncidencia = 1;
-                                        Toast toast1 = Toast.makeText(getApplicationContext(),
-                                                "Incidencias generadas con éxito", Toast.LENGTH_SHORT);
-                                        toast1.show();
-
-                                        ViewDialog alert = new ViewDialog(CargaCodigosBarraActivity.this);
-                                        alert.showDialog(CargaCodigosBarraActivity.this, "Solicita la autorización de la incidencia al encargado de almacén para continuar", null, TiposAlert.ERROR);
-                                    }
-                                } else if (opcion == 7) {
-                                    if (respuestaIncidencias.getCodigo() == 0) {
-                                        banderaIncidencia = 1;
-                                        Toast toast1 = Toast.makeText(getApplicationContext(),
-                                                "Incidencias generadas con éxito", Toast.LENGTH_SHORT);
-                                        toast1.show();
-
-
-                                        ViewDialog alert = new ViewDialog(CargaCodigosBarraActivity.this);
-                                        alert.showDialog(CargaCodigosBarraActivity.this, "Solicita la autorización de la incidencia al encargado de almacén para continuar", null, TiposAlert.ERROR);
-                                    }
-                                }
-                                // ----------------------------------
-
-                                if (respuestaIncidencias.getCodigo() != 0) {
-                                    if (indicadorProceso == "1") {
-                                        ViewDialog alert = new ViewDialog(CargaCodigosBarraActivity.this);
-                                        alert.showDialog(CargaCodigosBarraActivity.this, "Ocurrió un error al consultar incidencias", null, TiposAlert.ERROR);
-                                    }
-                                    if (indicadorProceso == "2") {
-                                        ViewDialog alert = new ViewDialog(CargaCodigosBarraActivity.this);
-                                        alert.showDialog(CargaCodigosBarraActivity.this, "Ocurrió un error al generar incidencias", null, TiposAlert.ERROR);
-                                    }
-                                }
-                            }
-                        },
-                        new Response.ErrorListener() {
-                            @Override
-                            public void onErrorResponse(VolleyError error) {
-                                mDialog.dismiss();
-                                System.out.println("*** Error al guardar los códigos *** response: " + error.getMessage());
-                                ViewDialog alert = new ViewDialog(CargaCodigosBarraActivity.this);
-                                alert.showDialog(
-                                        CargaCodigosBarraActivity.this,
-                                        "Ocurrió un problema al generar las incidencias" + error.getMessage(),
-                                        null, TiposAlert.ERROR);
-                            }
-                        }) {
-                    @Override
-                    protected Map<String, String> getParams() {
-                        Map<String, String> params = new HashMap<String, String>();
-                        params.put("folio", folio);
-                        params.put("numeroSerie", Build.SERIAL);
-                        params.put("version", version);
-                        params.put("usuarioVerificaId", numeroEmpleado);
-                        params.put("usuarioAutorizaId", "0");
-                        params.put("tipoAutorizacion", String.valueOf(tipoPermiso));
-                        params.put("indicadorProceso", indicadorProceso);
-                        params.put("articulosArray", obtieneArticulosIncidencia(xTodos, articuloId));
-                        params.put("cantidadesArray", obtieneCajasIncidencia(xTodos, articuloId));
-
-                        return params;
-                    }
-                };
-                strRequest.setRetryPolicy(new DefaultRetryPolicy(
-                        20000,
-                        DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
-                        DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-                AppController.getInstance().addToRequestQueue(strRequest, "tag");*/
             } catch (Exception me) {
                 mDialog.dismiss();
 //                System.out.println("*** No existe comunicación ***");
@@ -1708,54 +1463,54 @@ public class CargaCodigosBarraActivity extends AppCompatActivity {
         }
     }
 
-    public void generaListaIncidencias(String response) {
-        try {
-            XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
-            factory.setNamespaceAware(true);
-            XmlPullParser xpp = factory.newPullParser();
-            xpp.setInput(new StringReader(response));
-
-            int eventType = xpp.getEventType();
-            respuestaIncidencias = new RespuestaIncidenciasVO();  //nueva respuesta
-            List<RespuestaIncidenciasVO.IncidenciaVO> listaTemp = new ArrayList<>(); //nueva lista temporal de tipo IncidenciaVO (subclase)
-            RespuestaIncidenciasVO.IncidenciaVO incidencia = respuestaIncidencias.new IncidenciaVO(); //nuevo objeto de tipo IncidenciaVO (subclase)
-
-            while (eventType != XmlPullParser.END_DOCUMENT) {
-                if (eventType == XmlPullParser.START_TAG) {
-                    if (xpp.getName().equals("errorCode")) {
-                        eventType = xpp.next(); // advance to inner text
-                        respuestaIncidencias.setCodigo(Integer.parseInt(xpp.getText()));
-                    } else if (xpp.getName().equals("errorDesc")) {
-                        eventType = xpp.next(); // advance to inner text
-                        respuestaIncidencias.setMensaje(xpp.getText().toString());
-                    } else if (xpp.getName().equals("incidencia")) {
-                        incidencia = respuestaIncidencias.new IncidenciaVO();
-                    } else if (xpp.getName().equals("articuloId")) {
-                        eventType = xpp.next(); // advance to inner text
-                        incidencia.setArticuloId(Long.parseLong(xpp.getText()));
-                    } else if (xpp.getName().equals("cantidadDiferencia")) {
-                        eventType = xpp.next(); // advance to inner text
-                        incidencia.setCantidadDiferencia(Integer.parseInt(xpp.getText()));
-                    } else if (xpp.getName().equals("estatusDiferencia")) {
-                        eventType = xpp.next(); // advance to inner text
-                        incidencia.setEstatusDiferencia(Integer.parseInt(xpp.getText()));
-                    } else if (xpp.getName().equals("incidenciaId")) {
-                        eventType = xpp.next(); // advance to inner text
-                        incidencia.setIncidenciaId(Long.parseLong(xpp.getText()));
-                    }
-                } else if (eventType == XmlPullParser.END_TAG) {
-                    if (xpp.getName().equals("incidencia")) {
-                        listaTemp.add(incidencia);
-                    }
-                }
-                eventType = xpp.next();
-            }
-            respuestaIncidencias.setListaIncidencias(listaTemp);
-        } catch (Exception e) {
-            ViewDialog alert = new ViewDialog(CargaCodigosBarraActivity.this);
-            alert.showDialog(CargaCodigosBarraActivity.this, "Error al formar las diferencias del xml: " + e.getMessage(), null, TiposAlert.ERROR);
-        }
-    }
+//    public void generaListaIncidencias(String response) {
+//        try {
+//            XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
+//            factory.setNamespaceAware(true);
+//            XmlPullParser xpp = factory.newPullParser();
+//            xpp.setInput(new StringReader(response));
+//
+//            int eventType = xpp.getEventType();
+//            respuestaIncidencias = new RespuestaIncidenciasVO();  //nueva respuesta
+//            List<RespuestaIncidenciasVO.IncidenciaVO> listaTemp = new ArrayList<>(); //nueva lista temporal de tipo IncidenciaVO (subclase)
+//            RespuestaIncidenciasVO.IncidenciaVO incidencia = respuestaIncidencias.new IncidenciaVO(); //nuevo objeto de tipo IncidenciaVO (subclase)
+//
+//            while (eventType != XmlPullParser.END_DOCUMENT) {
+//                if (eventType == XmlPullParser.START_TAG) {
+//                    if (xpp.getName().equals("errorCode")) {
+//                        eventType = xpp.next(); // advance to inner text
+//                        respuestaIncidencias.setCodigo(Integer.parseInt(xpp.getText()));
+//                    } else if (xpp.getName().equals("errorDesc")) {
+//                        eventType = xpp.next(); // advance to inner text
+//                        respuestaIncidencias.setMensaje(xpp.getText().toString());
+//                    } else if (xpp.getName().equals("incidencia")) {
+//                        incidencia = respuestaIncidencias.new IncidenciaVO();
+//                    } else if (xpp.getName().equals("articuloId")) {
+//                        eventType = xpp.next(); // advance to inner text
+//                        incidencia.setArticuloId(Long.parseLong(xpp.getText()));
+//                    } else if (xpp.getName().equals("cantidadDiferencia")) {
+//                        eventType = xpp.next(); // advance to inner text
+//                        incidencia.setCantidadDiferencia(Integer.parseInt(xpp.getText()));
+//                    } else if (xpp.getName().equals("estatusDiferencia")) {
+//                        eventType = xpp.next(); // advance to inner text
+//                        incidencia.setEstatusDiferencia(Integer.parseInt(xpp.getText()));
+//                    } else if (xpp.getName().equals("incidenciaId")) {
+//                        eventType = xpp.next(); // advance to inner text
+//                        incidencia.setIncidenciaId(Long.parseLong(xpp.getText()));
+//                    }
+//                } else if (eventType == XmlPullParser.END_TAG) {
+//                    if (xpp.getName().equals("incidencia")) {
+//                        listaTemp.add(incidencia);
+//                    }
+//                }
+//                eventType = xpp.next();
+//            }
+//            respuestaIncidencias.setListaIncidencias(listaTemp);
+//        } catch (Exception e) {
+//            ViewDialog alert = new ViewDialog(CargaCodigosBarraActivity.this);
+//            alert.showDialog(CargaCodigosBarraActivity.this, "Error al formar las diferencias del xml: " + e.getMessage(), null, TiposAlert.ERROR);
+//        }
+//    }
 
     public void codigoBarraText(View view) {
         //doNothin

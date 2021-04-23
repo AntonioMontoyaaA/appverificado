@@ -22,14 +22,6 @@ public class ArticuloVO implements Serializable {
     private boolean esCapturado = false;
     private boolean esBuscadoDiferencias = false;
 
-
-    private int codigo;
-    private String mensaje;
-    private List<ArticuloVO> listaArticulo;
-
-
-
-
     public int getNormaPallet() {
         return normaPallet;
     }
@@ -121,29 +113,6 @@ public class ArticuloVO implements Serializable {
 
     public void setEsBuscadoDiferencias(boolean esBuscadoDiferencias) {
         this.esBuscadoDiferencias = esBuscadoDiferencias;
-    }
-    public int getCodigo() {
-        return codigo;
-    }
-
-    public void setCodigo(int codigo) {
-        this.codigo = codigo;
-    }
-
-    public String getMensaje() {
-        return mensaje;
-    }
-
-    public void setMensaje(String mensaje) {
-        this.mensaje = mensaje;
-    }
-
-    public List<ArticuloVO> getListaArticulo() {
-        return listaArticulo;
-    }
-
-    public void setListaArticulo(List<ArticuloVO> listaArticulo) {
-        this.listaArticulo = listaArticulo;
     }
 
 }

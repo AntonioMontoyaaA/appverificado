@@ -18,7 +18,7 @@ import static neto.com.mx.verificapedidocedis.utiles.Constantes.NAMESPACE;
 
 
 public class ProviderGuardarDiferencias_CargaCodigosBarra {
-    final String TAG = "ProviderGuardaDiferencias_CargaCodigosBarra";
+    final String TAG = "ProvGuarDif_CargaCB";
     private static ProviderGuardarDiferencias_CargaCodigosBarra instance;
     private Context context;
     Util u = new Util();

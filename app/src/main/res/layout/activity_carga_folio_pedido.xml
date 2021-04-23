@@ -116,6 +116,15 @@
                 android:layout_gravity="center"
                 android:tint="@color/colorFuente"
                 />
+            <!--ImageView
+                android:id="@+id/validaPedidoBoton"
+                android:src="@drawable/img_codigo_barras_2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:onClick="pedidoPruebaTogo"
+                android:tint="@color/colorFuente"
+                /-->
         </LinearLayout>
 
     </GridLayout>
