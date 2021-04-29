@@ -31,6 +31,7 @@ public class Constantes {
 
     public static final int CONTADOR_GUARDA_AVANCE = 10;
 
+
     public static final String LLAVE_PRIVADA = "RecibePedidosV1";
 
     public static final String ID_APP_VERIFICADOR   =   "2";
