@@ -47,9 +47,6 @@ public class Util {
 
     }
 
-
-
-
     public static final String HEX_DIGITS = "0123456789ABCDEF";
     public static String HexadecilaToDecimal(String hexaNumber) {
         char[] sources = hexaNumber.toCharArray();

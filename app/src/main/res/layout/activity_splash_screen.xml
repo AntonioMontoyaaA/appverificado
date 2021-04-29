@@ -58,6 +58,13 @@
                 android:textColor="@color/colorBlanco"
                 android:text="---"/>
         </GridLayout>
+        <View
+            android:id="@+id/debugMode"
+            android:background="@color/colorAmarilloAlert"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:layout_width="10dp"
+            android:layout_height="10dp" />
 
     </RelativeLayout>
 </FrameLayout>
