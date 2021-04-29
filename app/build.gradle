@@ -6,7 +6,7 @@ android {
         applicationId "neto.com.mx.verificapedidocedis"
         minSdkVersion 19
         targetSdkVersion 28
-        versionCode 9
+        versionCode 11
         versionName "2.0.3"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
