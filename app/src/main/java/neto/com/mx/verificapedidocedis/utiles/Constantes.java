@@ -24,6 +24,7 @@ public class Constantes {
 
     public static final int AMBIENTE_APP = AMBIENTE_PROD;
     public  static final boolean IGNORE_APP_ID_CHECK = false;
+    public static final boolean DOWNLOAD_APK_WITH_MANAGER = true;
 
     public static final String URL_STRING_LOGIN     = URLS_LOGIN[AMBIENTE_APP];
     public static final String URL_STRING           = URLS[AMBIENTE_APP];

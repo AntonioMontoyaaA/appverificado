@@ -73,7 +73,7 @@ public class Util {
                 SoapPrimitive nombreUsuario = (SoapPrimitive) servicio.getProperty("nombreUsuario");
                 SoapPrimitive esUsuarioValido = (SoapPrimitive) servicio.getProperty("esUsuarioValido");
                 try {
-                    item.setCodigo(codigo.getValue() != null ? Integer.valueOf((String) codigo.getValue()) : 1);
+                    item.setCodigo(codigo.getValue() != null ? Integer.parseInt((String) codigo.getValue()) : 1);
                     System.out.println("codigo ");
                 } catch (Exception e) {
                     item.setCodigo(1);
@@ -126,7 +126,7 @@ public class Util {
         if (str.contains("Error") || servicio.equals(null)) {
             SoapPrimitive coidgo = (SoapPrimitive) servicio.getProperty("errorCode");
             SoapPrimitive mensaje = (SoapPrimitive) servicio.getProperty("errorDesc");
-            item.setCodigo(Integer.valueOf((String) coidgo.getValue()));
+            item.setCodigo(Integer.parseInt((String) coidgo.getValue()));
             item.setMensaje((String) mensaje.getValue());
 
         } else {
@@ -155,12 +155,12 @@ public class Util {
                                         SoapPrimitive porcentaje = (SoapPrimitive) pojoSoap.getProperty("porcentajeMinimoVerificado");
                                         SoapPrimitive nombreCorto = (SoapPrimitive) pojoSoap.getProperty("nombreCorto");
 
-                                        items.setIdZona(Integer.valueOf((String) zonaId.getValue()));
+                                        items.setIdZona(Integer.parseInt((String) zonaId.getValue()));
                                         items.setDescripcionZona((String) descripcionZona.getValue());
-                                        items.setZonaValida(Integer.valueOf((String) zonaValida.getValue()));
+                                        items.setZonaValida(Integer.parseInt((String) zonaValida.getValue()));
                                         items.setNombreUsuario((String) nombreUsuario.getValue());
-                                        items.setEstatusZona(Integer.valueOf((String) estatusZona.getValue()));
-                                        items.setPorcentaje(Integer.valueOf((String) porcentaje.getValue()));
+                                        items.setEstatusZona(Integer.parseInt((String) estatusZona.getValue()));
+                                        items.setPorcentaje(Integer.parseInt((String) porcentaje.getValue()));
                                         items.setNombreCorto((String) nombreCorto.getValue());
                                         listaZonaVerificado.add(items);
                                         System.out.println("///////////////////////" + listaZonaVerificado + "/////////////////////////////");
@@ -184,7 +184,7 @@ public class Util {
                     SoapPrimitive tiendaId = (SoapPrimitive) servicio.getProperty("tiendaId");
                     //SoapPrimitive listaZonas = (SoapPrimitive) servicio.getProperty("listaZonas");
                     try {
-                        item.setCodigo(codigo.getValue() != null ? Integer.valueOf((String) codigo.getValue()) : 1);
+                        item.setCodigo(codigo.getValue() != null ? Integer.parseInt((String) codigo.getValue()) : 1);
                         System.out.println("codigo ");
                     } catch (Exception e) {
                         item.setCodigo(1);
@@ -202,7 +202,7 @@ public class Util {
                         item.setNombreCedis(" ");
                     }
                     try {
-                        item.setCedisId(cedisId.getValue() != null ? Integer.valueOf((String) cedisId.getValue()) : 0);
+                        item.setCedisId(cedisId.getValue() != null ? Integer.parseInt((String) cedisId.getValue()) : 0);
                         System.out.println("cedisID ");
                     } catch (Exception e) {
                         item.setCedisId(0);
@@ -232,7 +232,7 @@ public class Util {
                         item.setNombreTienda(" ");
                     }
                     try {
-                        item.setTiendaId(tiendaId.getValue() != null ? Integer.valueOf((String) tiendaId.getValue()) : 0);
+                        item.setTiendaId(tiendaId.getValue() != null ? Integer.parseInt((String) tiendaId.getValue()) : 0);
                         System.out.println("tiendaId ");
                     } catch (Exception e) {
                         item.setTiendaId(0);
@@ -262,7 +262,7 @@ public class Util {
         if (str.contains("Error") || servicio.equals(null)) {
             SoapPrimitive coidgo = (SoapPrimitive) servicio.getProperty("errorCode");
             SoapPrimitive mensaje = (SoapPrimitive) servicio.getProperty("errorDesc");
-            respuestaIncidencias.setCodigo(Integer.valueOf((String) coidgo.getValue()));
+            respuestaIncidencias.setCodigo(Integer.parseInt((String) coidgo.getValue()));
             respuestaIncidencias.setMensaje((String) mensaje.getValue());
 
         } else {
@@ -285,10 +285,10 @@ public class Util {
                                         SoapPrimitive cantidadDiferencia = (SoapPrimitive) pojoSoap.getProperty("cantidadDiferencia");
                                         SoapPrimitive estatusDiferencia = (SoapPrimitive) pojoSoap.getProperty("estatusDiferencia");
 
-                                        incidencia.setIncidenciaId(Long.valueOf((String) incidenciaId.getValue()));
-                                        incidencia.setArticuloId(Long.valueOf((String) articuloId.getValue()));
-                                        incidencia.setCantidadDiferencia(Integer.valueOf((String) cantidadDiferencia.getValue()));
-                                        incidencia.setEstatusDiferencia(Integer.valueOf((String) estatusDiferencia.getValue()));
+                                        incidencia.setIncidenciaId(Long.parseLong((String) incidenciaId.getValue()));
+                                        incidencia.setArticuloId(Long.parseLong((String) articuloId.getValue()));
+                                        incidencia.setCantidadDiferencia(Integer.parseInt((String) cantidadDiferencia.getValue()));
+                                        incidencia.setEstatusDiferencia(Integer.parseInt((String) estatusDiferencia.getValue()));
                                         listaTemp.add(incidencia);
                                     }
                                 }
@@ -301,7 +301,7 @@ public class Util {
                     SoapPrimitive codigo = (SoapPrimitive) servicio.getProperty("errorCode");
                     SoapPrimitive mensaje = (SoapPrimitive) servicio.getProperty("errorDesc");
                     try {
-                        respuestaIncidencias.setCodigo(codigo.getValue() != null ? Integer.valueOf((String) codigo.getValue()) : 1);
+                        respuestaIncidencias.setCodigo(codigo.getValue() != null ? Integer.parseInt((String) codigo.getValue()) : 1);
                     } catch (Exception e) {
                         respuestaIncidencias.setCodigo(1);
                     }
@@ -433,11 +433,11 @@ public class Util {
                                     SoapPrimitive cantidadAsignada = (SoapPrimitive) pojoSoap.getProperty("cantidadAsignada");
                                     SoapPrimitive cantidadVerificada = (SoapPrimitive) pojoSoap.getProperty("cantidadVerificada");
 
-                                    items.setArticuloId(Long.valueOf((String) articuloId.getValue()));
+                                    items.setArticuloId(Long.parseLong((String) articuloId.getValue()));
                                     items.setCodigoBarras((String) codigobarras.getValue());
                                     items.setNombreArticulo((String) nombre.getValue());
-                                    items.setCajasAsignadas(Integer.valueOf((String) cantidadAsignada.getValue()));
-                                    items.setCajasVerificadas(Integer.valueOf((String) cantidadVerificada.getValue()));
+                                    items.setCajasAsignadas(Integer.parseInt((String) cantidadAsignada.getValue()));
+                                    items.setCajasVerificadas(Integer.parseInt((String) cantidadVerificada.getValue()));
                                     listaCodigosFaltantes.add(items);
                                 }
                             }
@@ -454,7 +454,7 @@ public class Util {
                     SoapPrimitive totalCajasAsignadas = (SoapPrimitive) servicio.getProperty("totalCajasAsignadas");
                     SoapPrimitive totalCajasVerificadas = (SoapPrimitive) servicio.getProperty("totalCajasVerificadas");
                     try {
-                        item.setCodigo(codigo.getValue() != null ? Integer.valueOf((String) codigo.getValue()) : 1);
+                        item.setCodigo(codigo.getValue() != null ? Integer.parseInt((String) codigo.getValue()) : 1);
                     } catch (Exception e) {
                         item.setCodigo(1);
                     }
@@ -464,12 +464,12 @@ public class Util {
                         item.setMensaje(" ");
                     }
                     try {
-                        item.setTotalArticulosAsignados(articulosAsignados.getValue() != null ? Integer.valueOf((String) articulosAsignados.getValue()) : 0);
+                        item.setTotalArticulosAsignados(articulosAsignados.getValue() != null ? Integer.parseInt((String) articulosAsignados.getValue()) : 0);
                     } catch (Exception e) {
                         item.setTotalArticulosAsignados(0);
                     }
                     try {
-                        item.setTotalArticulosVerificados(articulosVerificados.getValue() != null ? Integer.valueOf((String) articulosVerificados.getValue()) : 0);
+                        item.setTotalArticulosVerificados(articulosVerificados.getValue() != null ? Integer.parseInt((String) articulosVerificados.getValue()) : 0);
                     } catch (Exception e) {
                         item.setTotalArticulosVerificados(0);
                     }
@@ -479,12 +479,12 @@ public class Util {
                         item.setEstatusPedido(" ");
                     }
                     try {
-                        item.setTotalCajasAsignadas(totalCajasAsignadas.getValue() != null ? Integer.valueOf((String) totalCajasAsignadas.getValue()) : 0);
+                        item.setTotalCajasAsignadas(totalCajasAsignadas.getValue() != null ? Integer.parseInt((String) totalCajasAsignadas.getValue()) : 0);
                     } catch (Exception e) {
                         item.setTotalCajasAsignadas(0);
                     }
                     try {
-                        item.setTotalCajasVerificadas(totalCajasVerificadas.getValue() != null ? Integer.valueOf((String) totalCajasVerificadas.getValue()) : 0);
+                        item.setTotalCajasVerificadas(totalCajasVerificadas.getValue() != null ? Integer.parseInt((String) totalCajasVerificadas.getValue()) : 0);
                     } catch (Exception e) {
                         item.setTotalCajasVerificadas(0);
                     }
