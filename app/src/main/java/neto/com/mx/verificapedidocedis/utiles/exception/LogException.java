@@ -62,7 +62,7 @@ public class LogException {
         stringBuilder.append("\n");
         stringBuilder.append("Device Name: ").append(getDeviceName());
         stringBuilder.append("\n");
-        stringBuilder.append("Device Version: ").append(getDeviceVersion(context));
+        stringBuilder.append("Device Version: ").append(getDeviceVersionName(context));
         stringBuilder.append("\n");
         stringBuilder.append("Device UUID: ").append(getUUID(context));
         stringBuilder.append("\n");
@@ -92,13 +92,20 @@ public class LogException {
         return manufacturer + " " + model;
     }
 
-    public static String getDeviceVersion(Context activity) {
+    public static String getDeviceVersionName(Context activity) {
         String v;
         try {
             v = AppController.getInstance().getPackageManager().getPackageInfo(activity.getPackageName(), 0).versionName;
             return v.replace("-staging", "");
         } catch (PackageManager.NameNotFoundException e) {
             return null;
+        }
+    }
+    public static int getDeviceVersionCode(Context activity) {
+        try {
+            return AppController.getInstance().getPackageManager().getPackageInfo(activity.getPackageName(), 0).versionCode;
+        } catch (PackageManager.NameNotFoundException e) {
+            return 0;
         }
     }
 

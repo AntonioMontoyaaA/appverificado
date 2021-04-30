@@ -7,18 +7,15 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
-import android.support.v4.content.FileProvider;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -29,27 +26,20 @@ import android.widget.TextView;
 
 import com.android.volley.VolleyError;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.security.KeyManagementException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.regex.Matcher;
@@ -59,22 +49,18 @@ import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
-import neto.com.mx.verificapedidocedis.BuildConfig;
 import neto.com.mx.verificapedidocedis.R;
-import neto.com.mx.verificapedidocedis.SplashScreenActivity;
 import neto.com.mx.verificapedidocedis.cliente.ClienteConsultaGenericaPrueba2;
 import neto.com.mx.verificapedidocedis.cliente.ClienteSSLConsultaGenerica;
 import neto.com.mx.verificapedidocedis.cliente.HandlerRespuestasVolley;
-import neto.com.mx.verificapedidocedis.decarga_version.DescargaUltimaVersionDialogPrueba;
-import neto.com.mx.verificapedidocedis.decarga_version.DescargaUltimaVersionDialog_https;
 import neto.com.mx.verificapedidocedis.decarga_version.descargarAPK.object.ParametrosDescarga;
 import neto.com.mx.verificapedidocedis.mensajes.ParametroCuerpo;
 import neto.com.mx.verificapedidocedis.mensajes.RespuestaDinamica;
 import neto.com.mx.verificapedidocedis.mensajes.SolicitudServicio;
 import neto.com.mx.verificapedidocedis.utiles.Constantes;
+import neto.com.mx.verificapedidocedis.utiles.FileManager;
 import neto.com.mx.verificapedidocedis.utiles.GlobalShare;
 import neto.com.mx.verificapedidocedis.utiles.LocalProperties;
 import neto.com.mx.verificapedidocedis.utiles.exception.LogException;
@@ -160,13 +146,8 @@ public class DialogInformacionDescargaFragment extends DialogFragment {
         descargaBotonCerrar.setVisibility(View.GONE);
         progressBar.setVisibility(View.GONE);
 
-        descargaBotonCerrar.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dismiss();
-            }
-        });
-        initProcesoDescarga(new DescargaCallback() {
+
+        final DescargaCallback descargaCallback = new DescargaCallback() {
             @Override
             public void updateProgress(int progreso) {
                 progressBar.setVisibility(View.VISIBLE);
@@ -191,23 +172,35 @@ public class DialogInformacionDescargaFragment extends DialogFragment {
             public void finishedDownloading(String u) {
                 descargaBotonCerrar.setVisibility(View.VISIBLE);
                 textoInformativo.setText("Iniciando instalación...");
-                //Muestra y Habilita boton
-                Intent intentInstaller = new Intent(Intent.ACTION_VIEW);
-                intentInstaller.setDataAndType(
-                        FileProvider.getUriForFile(
-                                context, BuildConfig.APPLICATION_ID + ".provider", new File(u)),
-                        "application/vnd.android.package-archive");
-                intentInstaller.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                startActivity(intentInstaller);
+
+                if(FileManager.isLocalInstallationOlder(context,Uri.parse(u))){
+                    startActivity(FileManager.getIntentForApk(context,new File(u),null));
+                }else{
+                    textoInformativo.setText("No se pudo instalar la Actualización Error: 0x776");
+                    progressBar.setVisibility(View.GONE);
+                    descargaBotonCerrar.setVisibility(View.VISIBLE);
+                }
+
+            }
+        };
+
+        descargaBotonCerrar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                initProcesoDescarga(descargaCallback);
             }
         });
+        initProcesoDescarga(descargaCallback);
         return v;
+
     }
 
     private void initProcesoDescarga(final DescargaCallback descargaCallback) {
+        descargaBotonCerrar.setVisibility(View.GONE);
+        progressBar.setVisibility(View.GONE);
         String aplicacionId = getResources().getString(R.string.app_id);
         String imeii = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
-        final String versionActual = LogException.getDeviceVersion(context);
+        final String versionActual = LogException.getDeviceVersionName(context);
 
         if (aplicacionId == null || aplicacionId.isEmpty()) {
             descargaCallback.errorDownloading("No se ha configurado un id para esta aplicación.");
@@ -457,14 +450,13 @@ public class DialogInformacionDescargaFragment extends DialogFragment {
                         if (archivo != null && archivo.exists() && archivo.getTotalSpace() > 0) {
                             descargaCallback.updateTextinfo("Instalando aplicación...");
 
-                            Uri uriArchivoEncontrado = FileProvider.getUriForFile(
-                                    context, BuildConfig.APPLICATION_ID + ".provider", archivo);
-                            Intent intentInstaller = new Intent(Intent.ACTION_VIEW);
-                            intentInstaller.setDataAndType(uriArchivoEncontrado,
-                                    "application/vnd.android.package-archive");
-                            intentInstaller.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_GRANT_READ_URI_PERMISSION);
-
-                            startActivity(intentInstaller);
+                            if(FileManager.isLocalInstallationOlder(context,Uri.parse(archivo.getAbsolutePath()))){
+                                startActivity(FileManager.getIntentForApk(context,archivo,null));
+                            }else{
+                                textoInformativo.setText("No se pudo instalar la Actualización Error: 0x776");
+                                progressBar.setVisibility(View.GONE);
+                                descargaBotonCerrar.setVisibility(View.VISIBLE);
+                            }
                         } else {
                             descargaCallback.updateTextinfo("Iniciando descarga...");
 
@@ -682,7 +674,7 @@ public class DialogInformacionDescargaFragment extends DialogFragment {
                     descargaTerminada = true;
                     textoInformativo.setText("actualización descargada al" + 100 + "% Iniciando instalación...");
                     //Muestra y Habilita boton
-                    Intent intentInstaller = new Intent(Intent.ACTION_VIEW);
+
 
                     IntentFilter ifilter = new IntentFilter();
                     ifilter.addAction(Intent.ACTION_PACKAGE_ADDED);
@@ -693,10 +685,14 @@ public class DialogInformacionDescargaFragment extends DialogFragment {
 
                     contexto.registerReceiver(installReceiver, ifilter);
 
-                    intentInstaller.setDataAndType(uriURLDescarga,
-                            "application/vnd.android.package-archive");
-                    intentInstaller.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                    startActivity(intentInstaller);
+                    if(FileManager.isLocalInstallationOlder(context,uriURLDescarga)){
+                        startActivity(FileManager.getIntentForApk(context,null,uriURLDescarga));
+                    }else{
+                        textoInformativo.setText("No se pudo instalar la Actualización Error: 0x776");
+                        progressBar.setVisibility(View.GONE);
+                        descargaBotonCerrar.setVisibility(View.VISIBLE);
+                    }
+
                 } else {
                     textoInformativo.setText("No es posible descargar la actualización, es posible que los archivos ya no esten disponibles en la ubicación registrada.");
                     //Muestra y Habilita boton

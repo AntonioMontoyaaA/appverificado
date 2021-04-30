@@ -6,7 +6,7 @@ android {
         applicationId "neto.com.mx.verificapedidocedis"
         minSdkVersion 19
         targetSdkVersion 28
-        versionCode 12
+        versionCode 12 //La version descargada debe ser mayor que la version instalada de lo contrario error 0x776
         versionName "2.0.4"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }

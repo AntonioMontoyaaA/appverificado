@@ -35,7 +35,7 @@
             android:layout_gravity="center"
             android:layout_marginTop="8dp"
             android:background="@drawable/rounded_boton_generico"
-            android:text="cerrar"
+            android:text="Reintentar"
             android:layout_marginBottom="8dp"
             android:textColor="#FFFFFF"
             android:textSize="15sp" />
