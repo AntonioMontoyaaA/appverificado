@@ -65,7 +65,11 @@ public class CargaFolioPedidoActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_carga_folio_pedido);
+        if(Constantes.AMBIENTE_APP<2){
+            setContentView(R.layout.activity_carga_folio_pedido_desa);
+        }else{
+            setContentView(R.layout.activity_carga_folio_pedido);
+        }
         context = this.getApplicationContext();
         getSupportActionBar().hide();
 

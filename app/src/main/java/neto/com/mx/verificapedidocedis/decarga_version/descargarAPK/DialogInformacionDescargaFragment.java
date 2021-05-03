@@ -164,23 +164,41 @@ public class DialogInformacionDescargaFragment extends DialogFragment {
             public void errorDownloading(String error) {
                 textoInformativo.setText(error);
                 //Muestra y Habilita boton
-                descargaBotonCerrar.setVisibility(View.VISIBLE);
+                //descargaBotonCerrar.setVisibility(View.VISIBLE);
                 progressBar.setVisibility(View.GONE);
             }
 
             @Override
             public void finishedDownloading(String u) {
-                descargaBotonCerrar.setVisibility(View.VISIBLE);
+                //descargaBotonCerrar.setVisibility(View.VISIBLE);
                 textoInformativo.setText("Iniciando instalación...");
 
-                if(FileManager.isLocalInstallationOlder(context,Uri.parse(u))){
-                    startActivity(FileManager.getIntentForApk(context,new File(u),null));
-                }else{
-                    textoInformativo.setText("No se pudo instalar la Actualización Error: 0x776");
-                    progressBar.setVisibility(View.GONE);
-                    descargaBotonCerrar.setVisibility(View.VISIBLE);
+                try {
+                    if(FileManager.isLocalInstallationOlder(context,Uri.parse(u))){
+                        startActivity(FileManager.getIntentForApk(context,new File(u),null));
+                    }else{
+                        textoInformativo.setText("No se pudo instalar la Actualización Error: 0x776");
+                        progressBar.setVisibility(View.GONE);
+                        //descargaBotonCerrar.setVisibility(View.VISIBLE);
+                    }
+                } catch (Exception e) {
+                    textoInformativo.setText("Ocurrio un error al verificar el archivo Descargado: 0x778");
+                    e.printStackTrace();
                 }
 
+            }
+
+            @Override
+            public void apkUpToDate(String text) {
+                //descargaBotonCerrar.setVisibility(View.VISIBLE);
+                textoInformativo.setText(text);
+                Timer timer = new Timer();
+                timer.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        dismiss();
+                    }
+                },1500);
             }
         };
 
@@ -417,7 +435,7 @@ public class DialogInformacionDescargaFragment extends DialogFragment {
                     switch (idOperacionRealizar) {
                         case NO_ES_NECESARIO_ACTUALIZAR:
                             LocalProperties.setUsuarioBloqueado(false);
-                            descargaCallback.errorDownloading("No es necesario actualizar la versión.");
+                            descargaCallback.apkUpToDate("No es necesario actualizar la versión.");
                             return;
                         case ACTUALIZAR_VERSION_ESTABLE:
                             descargaCallback.updateTextinfo("Se Requiere instalar una versión anterior: " + descripOpRealizar);
@@ -455,7 +473,7 @@ public class DialogInformacionDescargaFragment extends DialogFragment {
                             }else{
                                 textoInformativo.setText("No se pudo instalar la Actualización Error: 0x776");
                                 progressBar.setVisibility(View.GONE);
-                                descargaBotonCerrar.setVisibility(View.VISIBLE);
+                                //descargaBotonCerrar.setVisibility(View.VISIBLE);
                             }
                         } else {
                             descargaCallback.updateTextinfo("Iniciando descarga...");
@@ -603,7 +621,7 @@ public class DialogInformacionDescargaFragment extends DialogFragment {
                               }
                               textoInformativo.setText("Descarga Fallida, reinicie la aplicación para intentar actualizar nuevamente. Motivo: " + razon);
                               //Muestra y Habilita boton
-                              descargaBotonCerrar.setVisibility(View.VISIBLE);
+                              //descargaBotonCerrar.setVisibility(View.VISIBLE);
                               progressBar.setVisibility(View.GONE);
                               descargaTerminada = true;
                           }
@@ -685,18 +703,23 @@ public class DialogInformacionDescargaFragment extends DialogFragment {
 
                     contexto.registerReceiver(installReceiver, ifilter);
 
-                    if(FileManager.isLocalInstallationOlder(context,uriURLDescarga)){
-                        startActivity(FileManager.getIntentForApk(context,null,uriURLDescarga));
-                    }else{
-                        textoInformativo.setText("No se pudo instalar la Actualización Error: 0x776");
-                        progressBar.setVisibility(View.GONE);
-                        descargaBotonCerrar.setVisibility(View.VISIBLE);
+                    try {
+                        if(FileManager.isLocalInstallationOlder(context,uriURLDescarga)){
+                            startActivity(FileManager.getIntentForApk(context,null,uriURLDescarga));
+                        }else{
+                            textoInformativo.setText("No se pudo instalar la Actualización Error: 0x776");
+                            progressBar.setVisibility(View.GONE);
+                            //descargaBotonCerrar.setVisibility(View.VISIBLE);
+                        }
+                    } catch (Exception e) {
+                        textoInformativo.setText("Ocurrio un error al verificar el archivo Descargado: 0x778");
+                        e.printStackTrace();
                     }
 
                 } else {
                     textoInformativo.setText("No es posible descargar la actualización, es posible que los archivos ya no esten disponibles en la ubicación registrada.");
                     //Muestra y Habilita boton
-                    descargaBotonCerrar.setVisibility(View.VISIBLE);
+                    //descargaBotonCerrar.setVisibility(View.VISIBLE);
                     progressBar.setVisibility(View.GONE);
                     descargaTerminada = true;
                 }
@@ -719,5 +742,7 @@ public class DialogInformacionDescargaFragment extends DialogFragment {
         void errorDownloading(String error);
 
         void finishedDownloading(String path);
+
+        void apkUpToDate(String text);
     }
 }
