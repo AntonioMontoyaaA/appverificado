@@ -200,6 +200,19 @@ public class DialogInformacionDescargaFragment extends DialogFragment {
                     }
                 },1500);
             }
+
+            @Override
+            public void dejarPasar() {
+                //descargaBotonCerrar.setVisibility(View.VISIBLE);
+                textoInformativo.setText("No se pudo Actualizar, continue utilizando la versión actual.");
+                Timer timer = new Timer();
+                timer.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        dismiss();
+                    }
+                },1500);
+            }
         };
 
         descargaBotonCerrar.setOnClickListener(new View.OnClickListener() {
@@ -239,7 +252,7 @@ public class DialogInformacionDescargaFragment extends DialogFragment {
         if (directorioDescargas != null) {
             File[] encontrados = directorioDescargas.listFiles(new FileFilter() {
                 public boolean accept(File pathname) {
-                    return pathname.getName().contains(versionActual + ".apk");
+                    return pathname.getName().contains(".apk");
                 }
             });
 
@@ -363,27 +376,32 @@ public class DialogInformacionDescargaFragment extends DialogFragment {
 
                     urlConnection = url.openConnection();
                     urlConnection.setReadTimeout(12000);
-                    inputStream = urlConnection.getInputStream();
-                    //apk
-                    double bytesTotales = urlConnection.getContentLength();
+                    try{
+                        inputStream = urlConnection.getInputStream();
+                        //apk
+                        double bytesTotales = urlConnection.getContentLength();
 
-                    buffer = new byte[2048];
-                    while ((byteLeido = inputStream.read(buffer)) != -1) {
-                        outStream.write(buffer, 0, byteLeido);
-                        byteEscrito += byteLeido;
-                        double progresoCalculado = (byteEscrito * 100) / bytesTotales;
-                        publishProgress((int) progresoCalculado);
-                    }
+                        buffer = new byte[2048];
+                        while ((byteLeido = inputStream.read(buffer)) != -1) {
+                            outStream.write(buffer, 0, byteLeido);
+                            byteEscrito += byteLeido;
+                            double progresoCalculado = (byteEscrito * 100) / bytesTotales;
+                            publishProgress((int) progresoCalculado);
+                        }
 
-                    inputStream.close();
-                    outStream.flush();
-                    outStream.close();
-                    if (bytesTotales != byteEscrito) {
+                        inputStream.close();
+                        outStream.flush();
+                        outStream.close();
+                        if (bytesTotales != byteEscrito) {
+                            isSuccessful = false;
+                            return "El tamaño del archivo descargado no coincide con el proporcionado por el servidor por lo que se borrará.";
+                        }
+                        isSuccessful = true;
+                    }catch (FileNotFoundException e) {
+                        Log.e(GlobalShare.logAplicaion, e.getMessage(), e);
                         isSuccessful = false;
-                        return "El tamaño del archivo descargado no coincide con el proporcionado por el servidor por lo que se borrará.";
+                        return "La URL de la actualización no se encuentra disponible: " + e.getMessage()+ " " + e.getCause();
                     }
-                    isSuccessful = true;
-
                 } catch (Exception e) {
                     String LOG = "DIAG_ASYNCTASK";
                     Log.e(LOG, "openConnection:", e);
@@ -406,6 +424,9 @@ public class DialogInformacionDescargaFragment extends DialogFragment {
                 descargaCallback.finishedDownloading(parametrosDescarga.getDirectorioDestino() + "/" + parametrosDescarga.getNombreApk());
             } else {
                 descargaCallback.errorDownloading(result);
+                if(result.contains("La URL de la actualización no se encuentra disponible")){
+                    descargaCallback.dejarPasar();
+                }
             }
         }
     }
@@ -589,6 +610,7 @@ public class DialogInformacionDescargaFragment extends DialogFragment {
                           public void run() {
                               String razon;
                               switch (razonFalla) {
+                                  //TODO AGREGAR CASO 404 en  DownloadManager.COLUMN_REASON -> File Not Found
                                   case DownloadManager.ERROR_CANNOT_RESUME:
                                       razon = "No se pudo resumir la descarga.";
                                       break;
@@ -744,5 +766,7 @@ public class DialogInformacionDescargaFragment extends DialogFragment {
         void finishedDownloading(String path);
 
         void apkUpToDate(String text);
+
+        void dejarPasar();
     }
 }
